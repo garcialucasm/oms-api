@@ -9,5 +9,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on ports ${port}`);
+  console.log(`OMS api app listening on ports ${port}`);
 });
