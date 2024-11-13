@@ -1,7 +1,7 @@
 import {} from "dotenv/config";
 import express from "express";
 
-import {virusRoutes} from "./routes/virusRoutes.js"
+import { virusRoutes } from "./routes/virusRoutes.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -14,5 +14,4 @@ app.listen(port, () => {
   console.log(`OMS api app listening on ports ${port}`);
 });
 
-
-app.use('/api/viruses', virusRoutes);
+app.use("/api/viruses", virusRoutes);
