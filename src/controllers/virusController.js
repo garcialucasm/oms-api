@@ -1,5 +1,3 @@
-// import VirusService from "../services/virusService";
-
 class VirusController {
   // TODO remover a 'const virus' ja que nao é usada?
   async createVirus(req, res) {
