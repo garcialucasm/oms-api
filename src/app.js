@@ -1,11 +1,7 @@
 import {} from "dotenv/config";
 import express from "express";
 
-// import zoneRoutes from "./routes/zoneRoutes"
 import {virusRoutes} from "./routes/virusRoutes.js"
-// import outbreakRoutes from "./routes/outbreakRoutes"
-// import countryRoutes from "./routes/countryRoutes"
-// import guidelineRoutes from "./routes/guidelineRoutes"
 
 const app = express();
 const port = process.env.PORT || 3000;
