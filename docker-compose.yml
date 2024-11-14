@@ -1,5 +1,3 @@
-version: "3.8" # Specify Docker Compose version
-
 services:
   # Node.js application service
   node:
