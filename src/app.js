@@ -5,6 +5,7 @@ import { zoneRoutes } from "./routes/zoneRoutes.js";
 import { virusRoutes } from "./routes/virusRoutes.js";
 
 const app = express();
+app.use(express.json());
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
