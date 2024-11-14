@@ -17,15 +17,20 @@ class ZoneService {
   async editByCode(cz, data) {
     const zone = await Zone.findOne({ cz: cz });
     if (!zone) {
-      throw new Error("Zone not found");
+      const error = new Error();
+      error.statusCode = 400;
+      throw error;
     }
     Object.assign(zone, data);
     await zone.save();
+    return zone;
   }
   async removeByCode(cz) {
     const zone = await Zone.findOne({ cz: cz }).exec();
     if (!zone) {
-      throw new Error("Zone not found");
+      const error = new Error();
+      error.statusCode = 400;
+      throw error;
     }
     await zone.deleteOne();
   }

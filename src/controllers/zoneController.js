@@ -15,12 +15,9 @@ class ZoneController {
         }
         res.status(400).json({ error: errorMessage.trim() });
       } else if (err.code === 11000) {
-        res
-          .status(400)
-          .json({
-            error:
-              "Duplicate zone code or zone name. Please use unique values.",
-          });
+        res.status(400).json({
+          error: "Duplicate zone code or zone name. Please use unique values.",
+        });
       } else {
         res
           .status(500)
@@ -80,13 +77,15 @@ class ZoneController {
           errorMessage += `${err.errors[field].message}`;
         }
         res.status(400).json({ error: errorMessage.trim() });
-      } else if (err.code === 11000) {
+      } else if (err.statusCode === 400) {
         res
           .status(400)
-          .json({
-            error:
-              "Duplicate zone code or zone name. Please use a unique values.",
-          });
+          .json({ error: "Zone not found with the given zone code" });
+      } else if (err.code === 11000) {
+        res.status(400).json({
+          error:
+            "Duplicate zone code or zone name. Please use a unique values.",
+        });
       } else {
         res.status(500).json({ error: "Error updating zone", details: err });
       }
@@ -99,7 +98,13 @@ class ZoneController {
       await ZoneService.removeByCode(req.params.cz);
       return res.status(200).json({ message: "deleted" });
     } catch (err) {
-      res.status(500).json({ error: `Error deleting Zone`, details: err });
+      if (err.statusCode === 400) {
+        res
+          .status(400)
+          .json({ error: "Zone not found with the given zone code" });
+      } else {
+        res.status(500).json({ error: `Error deleting Zone`, details: err });
+      }
     }
   }
 }

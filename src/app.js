@@ -9,9 +9,10 @@ const app = express();
 app.use(express.json());
 const port = process.env.PORT || 3000;
 
+const connectionString = process.env.DB_CONNECTION_STRING;
 mongoose.set("strictQuery", true);
 mongoose
-  .connect(process.env.DB_CONNECTION_STRING)
+  .connect(connectionString)
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Could not connect to MongoDB:", error));
 
