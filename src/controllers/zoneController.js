@@ -1,3 +1,4 @@
+import ZoneService from "../services/zoneService.js";
 class ZoneController {
   async createZone(req, res) {
     console.log("POST: /api/zones - " + JSON.stringify(req.body));
@@ -13,12 +14,9 @@ class ZoneController {
         }
         res.status(400).json({ error: errorMessage.trim() });
       } else if (err.code === 11000) {
-        res
-          .status(400)
-          .json({
-            error:
-              "Duplicate zone code or zone name. Please use unique values.",
-          });
+        res.status(400).json({
+          error: "Duplicate zone code or zone name. Please use unique values.",
+        });
       } else {
         res
           .status(500)
@@ -79,12 +77,10 @@ class ZoneController {
         }
         res.status(400).json({ error: errorMessage.trim() });
       } else if (err.code === 11000) {
-        res
-          .status(400)
-          .json({
-            error:
-              "Duplicate zone code or zone name. Please use a unique values.",
-          });
+        res.status(400).json({
+          error:
+            "Duplicate zone code or zone name. Please use a unique values.",
+        });
       } else {
         res.status(500).json({ error: "Error updating zone", details: err });
       }

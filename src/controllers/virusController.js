@@ -47,7 +47,6 @@ class VirusController {
     }
   }
 
-
   async getVirusByCode(req, res) {
     console.log("🚀 ~ VirusController ~ getVirusByCode ~ req:", req.body);
     try {
@@ -58,30 +57,6 @@ class VirusController {
       res.status(200).json(virus);
     } catch (err) {
       res.status(500).json({ error: "Error retrieving virus", details: err });
-    }
-  }
-
-  async getOutbreaksByVirusCode(req, res) {
-    console.log(
-      "🚀 ~ VirusController ~ getOutbreaksByVirusCode ~ req:",
-      req.body
-    );
-    try {
-      const virus = await VirusService.list({ cv: req.params.cv });
-      if (!virus) {
-        return res.status(404).json({ message: "Virus not found" });
-      }
-      const outbreak = await OutbreakService.list({ cv: req.params.cv });
-      if (!outbreak) {
-        return res
-          .status(204)
-          .json({ message: "No outbreaks from the selected virus" });
-      }
-      res.status(200).json(outbreak);
-    } catch (err) {
-      res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err });
     }
   }
 
