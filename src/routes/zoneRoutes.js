@@ -6,7 +6,7 @@ const router = express.Router();
 router.post("/", zoneController.createZone);
 router.get("/", zoneController.getAllZones);
 router.get("/:name", zoneController.getZonesByName);
-router.get("/:cz", zoneController.getZonesByCode);
+router.get("/cz/:cz", zoneController.getZonesByCode);
 router.put("/:cz", zoneController.updateZoneByCode);
 router.delete("/:cz", zoneController.deleteZoneByCode);
 
