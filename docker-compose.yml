@@ -1,0 +1,31 @@
+version: "3.8" # Specify Docker Compose version
+
+services:
+  # Node.js application service
+  node:
+    build: . # Build the Node.js container from the Dockerfile in the current directory
+    container_name: node_app # Name of the Node container
+    working_dir: /src # Set the working directory inside the container to /src
+    ports:
+      - "3000:3000" # Expose port 3000 for the Node.js app (host:container)
+    volumes:
+      - .:/src # Mount the current directory into the /src directory of the container
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/omsdatabase # Set the MongoDB connection URL (using the 'mongo' service)
+    depends_on:
+      - mongo # Ensure MongoDB container starts before Node.js
+    command: ["npm", "start"] # Run the npm start command to start the Node.js application
+
+  # MongoDB service
+  mongo:
+    image: mongo:8.0 # Use the official MongoDB 8.0 image
+    container_name: mongo_db # Name of the MongoDB container
+    volumes:
+      - mongo_data:/data/db # Mount a volume to persist MongoDB data
+    ports:
+      - "27017:27017" # Expose MongoDB port 27017 (host:container)
+
+# Define named volumes for persistence
+volumes:
+  mongo_data:
+    driver: local # Use the default local driver to store MongoDB data persistently

@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 const connectionString = process.env.DB_CONNECTION_STRING;
 mongoose.set("strictQuery", true);
 mongoose
-  .connect(connectionString)
+  .connect(connectionString || `mongodb://mongo:27017/omsdatabase`)
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => console.error("Could not connect to MongoDB:", error));
 
