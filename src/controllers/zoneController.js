@@ -1,5 +1,3 @@
-import ZoneService from "../services/zoneService.js";
-
 class ZoneController {
   async createZone(req, res) {
     console.log("POST: /api/zones - " + JSON.stringify(req.body));

@@ -34,6 +34,20 @@ class VirusController {
     }
   }
 
+  async getVirusByName(req, res) {
+    console.log("🚀 ~ VirusController ~ getVirusByCode ~ req:", req.body);
+    try {
+      const virus = await VirusService.list({ name: req.params.name });
+      if (!virus) {
+        return res.status(404).json({ message: "Virus not found" });
+      }
+      res.status(200).json(virus);
+    } catch (err) {
+      res.status(500).json({ error: "Error retrieving virus", details: err });
+    }
+  }
+
+
   async getVirusByCode(req, res) {
     console.log("🚀 ~ VirusController ~ getVirusByCode ~ req:", req.body);
     try {
