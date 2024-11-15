@@ -1,24 +1,25 @@
-import {} from "dotenv/config";
-import express from "express";
+import {} from "dotenv/config"
+import mongoose from "mongoose"
+import express from "express"
 
-import { zoneRoutes } from "./routes/zoneRoutes.js";
-import { virusRoutes } from "./routes/virusRoutes.js";
-import mongoose from "mongoose";
+import { zoneRoutes } from "./routes/zoneRoutes.js"
+import { virusRoutes } from "./routes/virusRoutes.js"
 
-const app = express();
-app.use(express.json());
-const port = process.env.PORT || 3000;
+const mongoConnectionString = process.env.DB_CONNECTION_STRING
+const port = process.env.PORT || 3000
+const app = express()
 
-const connectionString = process.env.DB_CONNECTION_STRING;
-mongoose.set("strictQuery", true);
+app.use(express.json())
+
+mongoose.set("strictQuery", true)
 mongoose
-  .connect(connectionString || `mongodb://mongo:27017/omsdatabase`)
+  .connect(mongoConnectionString || `mongodb://mongo:27017/omsdatabase`)
   .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => console.error("Could not connect to MongoDB:", error));
+  .catch((error) => console.error("Could not connect to MongoDB:", error))
 
 app.listen(port, () => {
-  console.log(`OMS api app listening on ports ${port}`);
-});
+  console.log(`OMS-API App listening on ports ${port}`)
+})
 
-app.use("/api/viruses", virusRoutes);
-app.use("/api/zones", zoneRoutes);
+app.use("/api/viruses", virusRoutes)
+app.use("/api/zones", zoneRoutes)
