@@ -9,7 +9,7 @@ This document provides a step-by-step guide to building and running the OMS API 
    From the root of the project directory, run the following command to build the Docker image:
 
    """
-   docker compose build -d
+   docker compose build
    """
 
 2. **Run Docker Compose**
