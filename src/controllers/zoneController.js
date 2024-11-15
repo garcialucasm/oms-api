@@ -1,7 +1,9 @@
 import ZoneService from "../services/zoneService.js"
+import logger from "../logger.js"
+
 class ZoneController {
   async createZone(req, res) {
-    console.log("POST: /api/zones - " + JSON.stringify(req.body))
+    logger.info("POST: /api/zones - " + JSON.stringify(req.body))
     try {
       const { cz, name } = req.body
       await ZoneService.save({ cz, name })
@@ -26,7 +28,7 @@ class ZoneController {
   }
 
   async getAllZones(req, res) {
-    console.log("GET:/api/zones")
+    logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
       return res.status(200).json(zones)
@@ -36,7 +38,7 @@ class ZoneController {
   }
 
   async getZonesByName(req, res) {
-    console.log("GET:/api/zones by Name: " + req.params.name)
+    logger.info("GET:/api/zones by Name: " + req.params.name)
     try {
       const zone = await ZoneService.listByName(req.params.name)
       if (!zone) {
@@ -49,7 +51,7 @@ class ZoneController {
   }
 
   async getZonesByCode(req, res) {
-    console.log("GET:/api/zones by Code: " + req.params.cz)
+    logger.info("GET:/api/zones by Code: " + req.params.cz)
     try {
       const zone = await ZoneService.listByCode(req.params.cz)
       if (!zone) {
@@ -62,7 +64,7 @@ class ZoneController {
   }
 
   async updateZoneByCode(req, res) {
-    console.log(
+    logger.info(
       "PUT:/api/zones: " + req.params.cz + " - " + JSON.stringify(req.body)
     )
     try {
@@ -91,7 +93,7 @@ class ZoneController {
   }
 
   async deleteZoneByCode(req, res) {
-    console.log(`DELETE:/api/zones: ${req.params.cz}`)
+    logger.info(`DELETE:/api/zones: ${req.params.cz}`)
     try {
       await ZoneService.removeByCode(req.params.cz)
       return res.status(200).json({ message: "deleted" })
