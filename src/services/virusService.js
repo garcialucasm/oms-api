@@ -23,6 +23,7 @@ class VirusService {
       }
     Object.assign(virus, data);
     await virus.save();
+    return virus;
   }
 
   async delete(cv) {

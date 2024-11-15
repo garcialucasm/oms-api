@@ -63,8 +63,8 @@ class VirusController {
   async updateVirus(req, res) {
     console.log("🚀 ~ VirusController ~ updateVirus ~ req:", req);
     try {
-      await VirusService.update(req.params.cv, req.body);
-      res.status(200).json({ message: "Virus updated!" });
+      const virus = await VirusService.update(req.params.cv, req.body);
+      res.status(200).json({ message: "Virus updated!", virus });
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: ";
