@@ -1,39 +1,39 @@
-import Zone from "../models/zoneModel.js";
+import Zone from "../models/zoneModel.js"
 
 class ZoneService {
   async save(data) {
-    const zone = new Zone(data);
-    await zone.save();
+    const zone = new Zone(data)
+    await zone.save()
   }
   async list() {
-    return await Zone.find();
+    return await Zone.find()
   }
   async listByName(name) {
-    return await Zone.findOne({ name: name }).exec();
+    return await Zone.findOne({ name: name }).exec()
   }
   async listByCode(cz) {
-    return await Zone.findOne({ cz: cz }).exec();
+    return await Zone.findOne({ cz: cz }).exec()
   }
   async editByCode(cz, data) {
-    const zone = await Zone.findOne({ cz: cz });
+    const zone = await Zone.findOne({ cz: cz })
     if (!zone) {
-      const error = new Error();
-      error.statusCode = 400;
-      throw error;
+      const error = new Error()
+      error.statusCode = 400
+      throw error
     }
-    Object.assign(zone, data);
-    await zone.save();
-    return zone;
+    Object.assign(zone, data)
+    await zone.save()
+    return zone
   }
   async removeByCode(cz) {
-    const zone = await Zone.findOne({ cz: cz }).exec();
+    const zone = await Zone.findOne({ cz: cz }).exec()
     if (!zone) {
-      const error = new Error();
-      error.statusCode = 400;
-      throw error;
+      const error = new Error()
+      error.statusCode = 400
+      throw error
     }
-    await zone.deleteOne();
+    await zone.deleteOne()
   }
 }
 
-export default new ZoneService();
+export default new ZoneService()

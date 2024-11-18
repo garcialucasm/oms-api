@@ -1,20 +1,20 @@
 # Use Node.js as the base image
-FROM node:22-alpine
+FROM node:22-alpine AS node
 
 # Set the working directory inside the container
 WORKDIR /src
 
-# Copy package.json and package-lock.json (or yarn.lock) for dependency installation
-COPY package*.json ./
+# Copy the package.json and yarn.lock for dependency installation
+COPY package.json yarn.lock ./
 
-# Install dependencies (using npm or yarn based on your setup)
-RUN npm install
+# Install production dependencies only
+RUN yarn install --production
 
 # Copy the rest of the application code into the container
 COPY . .
 
-# Expose the port our Express app listens on
+# Expose the port your Express app listens on
 EXPOSE 3000
 
-# Use the npm start script defined in package.json (which runs the app with nodemon)
-CMD ["npm", "start"]
+# Start the application
+CMD ["yarn", "start"]

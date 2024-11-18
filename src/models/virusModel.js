@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const VirusSchema = new Schema(
   {
@@ -17,6 +17,6 @@ const VirusSchema = new Schema(
     },
   },
   { collection: "viruses" }
-);
+)
 
-export default model("Virus", VirusSchema);
+export default model("Virus", VirusSchema)
