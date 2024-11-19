@@ -2,6 +2,10 @@ import Virus from "../models/virusModel.js"
 
 class VirusService {
   async create(data) {
+    const {cv, name} = data;
+    if (!cv || !name) {
+      throw new Error("MissingRequiredFields");
+    }
     const virus = new Virus(data)
     await virus.save()
   }
@@ -17,12 +21,13 @@ class VirusService {
   async update(cv, data) {
     const virus = await Virus.findOne({ cv: cv })
     if (!virus) {
-      const error = new Error()
-      error.name = "VirusNotFound"
-      throw error
-    }
-    Object.assign(virus, data)
-    await virus.save()
+        const error = new Error;
+        error.name = "VirusNotFound";
+        throw error;
+      }
+    Object.assign(virus, data);
+    await virus.save();
+    return virus;
   }
 
   async delete(cv) {
