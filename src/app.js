@@ -24,3 +24,18 @@ app.listen(port, () => {
 
 app.use("/api/viruses", virusRoutes)
 app.use("/api/zones", zoneRoutes)
+app.use("/api/guidelines", guidelineRoutes)
+
+GuidelineService.updateValidity(mongoConnectionString)
+
+const timeUntilMidnight = () => {
+  const now = new Date()
+  const nextMidnight = new Date(now)
+  nextMidnight.setHours(24, 0, 0, 0) 
+  return nextMidnight - now 
+}
+
+setTimeout(() => {
+  GuidelineService.updateValidity() 
+  setInterval(() => { GuidelineService.updateValidity()}, 24 * 60 * 60 * 1000) 
+}, timeUntilMidnight())
