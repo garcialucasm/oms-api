@@ -2,6 +2,10 @@ import Virus from "../models/virusModel.js"
 
 class VirusService {
   async create(data) {
+    const {cv, name} = data;
+    if (!cv || !name) {
+      throw new Error("MissingRequiredFields");
+    }
     const virus = new Virus(data)
     await virus.save()
   }

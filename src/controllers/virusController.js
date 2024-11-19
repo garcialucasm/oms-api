@@ -1,7 +1,6 @@
 import VirusService from "../services/virusService.js"
 class VirusController {
-  async createVirus(req, res) {
-    console.log("🚀 ~ VirusController ~ createVirus ~ req:", req.body)
+  async create(req, res) {
     try {
       const { cv, name } = req.body
       await VirusService.create({ cv, name })
@@ -12,7 +11,9 @@ class VirusController {
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message} `
         }
-        res.status(400).json({ error: errorMessage.trim() })
+        res.status(400).json({ error: errorMessage.trim() });
+      } else if (err.message === "MissingRequiredFields") {
+        return res.status(400).json({ error: "Missing required fields." });
       } else if (err.code === 11000) {
         res.status(400).json({
           error:
@@ -24,18 +25,19 @@ class VirusController {
     }
   }
 
-  async getAllViruses(req, res) {
-    console.log("🚀 ~ VirusController ~ getAllViruses ~ req:", req.body)
+  async getAll(req, res) {
     try {
       const virus = await VirusService.getAll()
       res.status(200).json(virus)
+      if (!virus) {
+        return res.status(404).json({ message: "No virus found" })
+      }
     } catch (err) {
       res.status(500).json({ error: "Error retrieving viruses", details: err })
     }
   }
 
-  async getVirusByName(req, res) {
-    console.log("🚀 ~ VirusController ~ getVirusByCode ~ req:", req.body)
+  async getByName(req, res) {
     try {
       const virus = await VirusService.list({ name: req.params.name })
       if (!virus) {
@@ -47,8 +49,7 @@ class VirusController {
     }
   }
 
-  async getVirusByCode(req, res) {
-    console.log("🚀 ~ VirusController ~ getVirusByCode ~ req:", req.body)
+  async getByCode(req, res) {
     try {
       const virus = await VirusService.list({ cv: req.params.cv })
       if (!virus) {
@@ -60,8 +61,7 @@ class VirusController {
     }
   }
 
-  async updateVirus(req, res) {
-    console.log("🚀 ~ VirusController ~ updateVirus ~ req:", req)
+  async update(req, res) {
     try {
       const virus = await VirusService.update(req.params.cv, req.body);
       res.status(200).json({ message: "Virus updated!", virus });
@@ -87,7 +87,7 @@ class VirusController {
     }
   }
 
-  async deleteVirus(req, res) {
+  async delete(req, res) {
     try {
       await VirusService.delete(req.params.cv)
       res.status(200).json({ message: "Virus deleted!" })
