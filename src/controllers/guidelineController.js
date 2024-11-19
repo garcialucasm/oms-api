@@ -5,7 +5,7 @@ class GuidelineController {
     try {
       const { cg, outbreak, validityPeriod } = req.body
       await GuidelineService.save({ cg, outbreak, validityPeriod }, outbreak)
-      return res.status(201).json("Guideline created")
+      res.status(201).json({message: "Guideline created"})
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
@@ -16,6 +16,11 @@ class GuidelineController {
       } else if (err.code === 11000) {
         res.status(400).json({
           error: "Duplicate guideline code. Please use unique values.",
+        })
+      } else if (err.statusCode === 400) {
+        res.status(400).json({
+          error:
+            "Outbreak not found. Please provide a valid outbreak identifier.",
         })
       } else {
         res
@@ -29,7 +34,7 @@ class GuidelineController {
     console.log("GET:/api/guidelines")
     try {
       const guidelines = await GuidelineService.list()
-      return res.status(200).json(guidelines)
+      res.status(200).json(guidelines)
     } catch (err) {
       res
         .status(500)
@@ -44,7 +49,7 @@ class GuidelineController {
       if (!guideline) {
         return res.status(404).json({ message: "Guideline not found" })
       }
-      return res.status(200).json(guideline)
+      res.status(200).json(guideline)
     } catch (err) {
       res
         .status(500)
@@ -59,7 +64,7 @@ class GuidelineController {
       if (!guideline) {
         return res.status(404).json({ message: "Guideline not found" })
       }
-      return res.status(200).json(guideline)
+      res.status(200).json(guideline)
     } catch (err) {
       res
         .status(500)
@@ -67,7 +72,7 @@ class GuidelineController {
     }
   }
 
-  async getGudelinesByCountryAndOutbreak(req, res) {
+  async getGuidelineByCountryAndOutbreak(req, res) {
     console.log(
       "GET:/api/guidelines by Country and Outbreak: " +
         req.params.cc +
@@ -81,7 +86,7 @@ class GuidelineController {
       if (!guideline) {
         return res.status(404).json({ message: "Guideline not found" })
       }
-      return res.status(200).json(guideline)
+      res.status(200).json(guideline)
     } catch (err) {
       res
         .status(500)
@@ -100,7 +105,7 @@ class GuidelineController {
         req.body.outbreak,
         { cg, zone, outbreak, validityPeriod }
       )
-      return res.status(201).json({ message: "Guideline updated: ", guideline })
+      res.status(201).json({ message: "Guideline updated: ", guideline })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error:"
@@ -109,9 +114,18 @@ class GuidelineController {
         }
         res.status(400).json({ error: errorMessage.trim() })
       } else if (err.statusCode === 400) {
-        res
-          .status(400)
-          .json({ error: "Guideline not found with the given code" })
+        if (err.message === "Outbreak not found") {
+          res
+            .status(400)
+            .json({
+              error:
+                "Outbreak not found. Please provide a valid outbreak identifier.",
+            })
+        } else {
+          res
+            .status(400)
+            .json({ error: "Guideline not found with the given code." })
+        }
       } else if (err.code === 11000) {
         res.status(400).json({
           error: "Duplicate guideline code. Please use unique values.",
@@ -128,7 +142,7 @@ class GuidelineController {
     console.log("DELETE:/api/guidelines: " + req.params.cg + " - ")
     try {
       await GuidelineService.removeByCode(req.params.cg)
-      return res.status(200).json({ message: "deleted" })
+      res.status(200).json({ message: "deleted" })
     } catch (err) {
       if (err.statusCode === 400) {
         res

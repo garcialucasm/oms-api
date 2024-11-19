@@ -7,7 +7,7 @@ class ZoneController {
     try {
       const { cz, name } = req.body
       await ZoneService.save({ cz, name })
-      return res.status(201).json("Zone created")
+      res.status(201).json("Zone created")
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
@@ -31,7 +31,7 @@ class ZoneController {
     logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
-      return res.status(200).json(zones)
+      res.status(200).json(zones)
     } catch (err) {
       res.status(500).json({ Error: "Error retrieving zones", details: err })
     }
@@ -44,7 +44,7 @@ class ZoneController {
       if (!zone) {
         return res.status(404).json({ message: "Zone not found" })
       }
-      return res.status(200).json(zone)
+      res.status(200).json(zone)
     } catch (err) {
       res.status(500).json({ error: "Error retrieving zone", details: err })
     }
@@ -57,7 +57,7 @@ class ZoneController {
       if (!zone) {
         return res.status(404).json({ message: "Zone not found" })
       }
-      return res.status(200).json(zone)
+      res.status(200).json(zone)
     } catch (err) {
       res.status(500).json({ error: "Error retrieving zone", details: err })
     }
@@ -70,7 +70,7 @@ class ZoneController {
     try {
       const { cz, name } = req.body
       const zone = await ZoneService.editByCode(req.params.cz, { cz, name })
-      return res.status(201).json({ message: "Zone updated: ", zone })
+      res.status(201).json({ message: "Zone updated: ", zone })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error:"
@@ -96,7 +96,7 @@ class ZoneController {
     logger.info(`DELETE:/api/zones: ${req.params.cz}`)
     try {
       await ZoneService.removeByCode(req.params.cz)
-      return res.status(200).json({ message: "deleted" })
+      res.status(200).json({ message: "deleted" })
     } catch (err) {
       if (err.statusCode === 400) {
         res

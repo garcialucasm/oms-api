@@ -5,6 +5,8 @@ import express from "express"
 import { zoneRoutes } from "./routes/zoneRoutes.js"
 import { virusRoutes } from "./routes/virusRoutes.js"
 import { outbreakRoutes } from "./routes/outbreakRoutes.js";
+import { guidelineRoutes } from "./routes/guidelineRoutes.js"
+import GuidelineService from "./services/guidelineService.js"
 import logger from "./logger.js"
 
 const mongoConnectionString = process.env.DB_CONNECTION_STRING

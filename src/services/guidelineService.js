@@ -7,20 +7,21 @@ class GuidelineService {
     if (!outbreakDoc) {
       const error = new Error()
       error.statusCode = 400
+      error.message = "Outbreak not found"
       throw error
     }
     const guideline = new Guideline(data)
     await guideline.save()
   }
   async list() {
-    return await Guideline.find().populate("Outbreak")
+    return await Guideline.find().populate("outbreak")
   }
   async listByCode(cg) {
-    return await Guideline.findOne({ cg: cg }).populate("Outbreak")
+    return await Guideline.findOne({ cg: cg }).populate("outbreak")
   }
   async listByStatus(isExpired) {
     return await Guideline.findOne({ isExpired: isExpired }).populate(
-      "Outbreak"
+      "outbreak"
     )
   }
 
@@ -46,6 +47,7 @@ class GuidelineService {
     if (!guideline) {
       const error = new Error()
       error.statusCode = 400
+      error.message = "Outbreak not found"
       throw error
     }
     await guideline.deleteOne()
