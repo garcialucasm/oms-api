@@ -30,7 +30,7 @@ class VirusController {
       const virus = await VirusService.getAll()
       res.status(200).json(virus)
       if (!virus) {
-        return res.status(404).json({ message: "No virus found" })
+        return res.status(404).json({ error: "No virus found" })
       }
     } catch (err) {
       res.status(500).json({ error: "Error retrieving viruses", details: err })
@@ -41,7 +41,7 @@ class VirusController {
     try {
       const virus = await VirusService.list({ name: req.params.name })
       if (!virus) {
-        return res.status(404).json({ message: "Virus not found" })
+        return res.status(404).json({ error: "Virus not found" })
       }
       res.status(200).json(virus)
     } catch (err) {
@@ -53,7 +53,7 @@ class VirusController {
     try {
       const virus = await VirusService.list({ cv: req.params.cv })
       if (!virus) {
-        return res.status(404).json({ message: "Virus not found" })
+        return res.status(404).json({ error: "Virus not found" })
       }
       res.status(200).json(virus)
     } catch (err) {

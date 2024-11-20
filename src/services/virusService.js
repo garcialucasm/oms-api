@@ -15,7 +15,7 @@ class VirusService {
   }
 
   async list(data) {
-    return await Virus.find(data).exec()
+    return await Virus.findOne(data).exec()
   }
 
   async update(cv, data) {
