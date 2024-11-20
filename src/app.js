@@ -2,8 +2,11 @@ import {} from "dotenv/config"
 import mongoose from "mongoose"
 import express from "express"
 
-import { zoneRoutes } from "./routes/zoneRoutes.js"
 import { virusRoutes } from "./routes/virusRoutes.js"
+import { outbreakRoutes } from "./routes/outbreakRoutes.js"
+import { zoneRoutes } from "./routes/zoneRoutes.js"
+import { countryRoutes } from "./routes/countryRoutes.js"
+import logger from "./logger.js"
 
 const mongoConnectionString = process.env.DB_CONNECTION_STRING
 const port = process.env.PORT || 3000
@@ -14,12 +17,14 @@ app.use(express.json())
 mongoose.set("strictQuery", true)
 mongoose
   .connect(mongoConnectionString || `mongodb://mongo:27017/omsdatabase`)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => console.error("Could not connect to MongoDB:", error))
+  .then(() => logger.info("Connected to MongoDB"))
+  .catch((error) => logger.error("Could not connect to MongoDB:", error))
 
 app.listen(port, () => {
-  console.log(`OMS-API App listening on ports ${port}`)
+  logger.info(`OMS-API App listening on ports ${port}`)
 })
 
 app.use("/api/viruses", virusRoutes)
 app.use("/api/zones", zoneRoutes)
+app.use("/api/countries", countryRoutes)
+app.use("/api/outbreaks", outbreakRoutes)
