@@ -78,7 +78,7 @@ class OutbreakController {
     try {
       const outbreaks = await OutbreakService.getAll()
       if (!outbreaks) {
-        return res.status(404).json({ message: "No outbreaks not found" })
+        return res.status(404).json({ error: "No outbreaks not found" })
       }
       res.status(200).json(outbreaks)
     } catch (err) {
@@ -92,7 +92,7 @@ class OutbreakController {
     try {
       const outbreak = await OutbreakService.list({ co: req.params.co })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ message: "Outbreak not found" })
+        return res.status(404).json({ error: "Outbreak not found" })
       }
       res.status(200).json(outbreak)
     } catch (err) {
@@ -104,12 +104,12 @@ class OutbreakController {
     try {
       const virus = await Virus.findOne({ cv: req.params.cv })
       if (!virus) {
-        return res.status(404).json({ message: "Virus not found" })
+        return res.status(404).json({ error: "Virus not found" })
       }
 
       const outbreak = await OutbreakService.list({ cv: virus._id })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ message: "Outbreaks not found" })
+        return res.status(404).json({ error: "Outbreaks not found" })
       }
       res.status(200).json(outbreak)
     } catch (err) {
@@ -123,11 +123,11 @@ class OutbreakController {
     try {
       const zone = await Zone.findOne({ cz: req.params.cz })
       if (!zone) {
-        return res.status(404).json({ message: "Zone not found" })
+        return res.status(404).json({ error: "Zone not found" })
       }
       const outbreak = await OutbreakService.list({ cz: zone._id })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ message: "Outbreaks not found" })
+        return res.status(404).json({ error: "Outbreaks not found" })
       }
       res.status(200).json(outbreak)
     } catch (err) {
@@ -141,7 +141,7 @@ class OutbreakController {
     try {
       const outbreak = await OutbreakService.list({ condition: "active" })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ message: "Outbreaks not found" })
+        return res.status(404).json({ error: "Outbreaks not found" })
       }
       res.status(200).json(outbreak)
     } catch (err) {
@@ -155,7 +155,7 @@ class OutbreakController {
     try {
       const outbreak = await OutbreakService.list({ condition: "occurred" })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ message: "Outbreaks not found" })
+        return res.status(404).json({ error: "Outbreaks not found" })
       }
       res.status(200).json(outbreak)
     } catch (err) {
