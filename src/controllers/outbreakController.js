@@ -6,7 +6,7 @@ import Zone from "../models/zoneModel.js"
 class OutbreakController {
   async create(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate, condition } = req.body
+      const { co, cv, cz, startDate, endDate } = req.body
 
       const parsedStartDate = new Date(startDate)
       const parsedEndDate = endDate ? new Date(endDate) : null
@@ -30,7 +30,6 @@ class OutbreakController {
         cz,
         startDate: parsedStartDate,
         endDate: parsedEndDate,
-        condition,
       })
 
       return res.status(201).json("New Outbreak created!")
@@ -61,10 +60,6 @@ class OutbreakController {
         return res.status(400).json({
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
-        })
-      } else if (err.message === "NoEndDate") {
-        return res.status(400).json({
-          error: "Cannot set condition to occurred if there is no endDate set.",
         })
       } else {
         return res
@@ -167,7 +162,7 @@ class OutbreakController {
 
   async update(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate, condition } = req.body
+      const { co, cv, cz, startDate, endDate } = req.body
       const parsedEndDate = endDate ? new Date(endDate) : null
 
       let parsedStartDate = null
@@ -195,6 +190,11 @@ class OutbreakController {
             error:
               "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
           })
+        } else if (parsedEndDate > Date.now()) {
+          return res.status(400).json({
+            error:
+              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
+          })
         }
       }
 
@@ -204,7 +204,6 @@ class OutbreakController {
         cz,
         startDate: parsedStartDate,
         endDate: parsedEndDate,
-        condition: condition,
       })
       res.status(200).json({ message: "Outbreak updated!", outbreak })
     } catch (err) {
@@ -231,16 +230,6 @@ class OutbreakController {
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
         })
-      } else if (err.message === "EndDateAlreadySet") {
-        return res.status(400).json({
-          error:
-            "Cannot set condition to active because the outbreak already has an endDate.",
-        })
-      } else if (err.message === "EndDateNotSet") {
-        return res.status(400).json({
-          error:
-            "Cannot set condition to occurred because the outbreak has no endDate.",
-        })
       } else if (err.code === 11000) {
         res.status(400).json({
           error:
@@ -254,7 +243,7 @@ class OutbreakController {
 
   async updateByZoneCodeVirusCode(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate, condition } = req.body
+      const { co, cv, cz, startDate, endDate } = req.body
       const parsedEndDate = endDate ? new Date(endDate) : null
 
       let parsedStartDate = null
@@ -282,6 +271,11 @@ class OutbreakController {
             error:
               "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
           })
+        } else if (parsedEndDate > Date.now()) {
+          return res.status(400).json({
+            error:
+              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
+          })
         }
       }
 
@@ -294,7 +288,6 @@ class OutbreakController {
           cz,
           startDate: parsedStartDate,
           endDate: parsedEndDate,
-          condition: condition,
         }
       )
       res.status(200).json({ message: "Outbreak updated!", outbreak })
@@ -306,12 +299,10 @@ class OutbreakController {
         }
         res.status(400).json({ error: errorMessage.trim() })
       } else if (err.message === "OutbreakNotFound") {
-        res
-          .status(400)
-          .json({
-            error:
-              "Outbreak not found with the given pair of zone and virus codes",
-          })
+        res.status(400).json({
+          error:
+            "Outbreak not found with the given pair of zone and virus codes",
+        })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
@@ -324,16 +315,6 @@ class OutbreakController {
         return res.status(400).json({
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
-        })
-      } else if (err.message === "EndDateAlreadySet") {
-        return res.status(400).json({
-          error:
-            "Cannot set condition to active because the outbreak already has an endDate.",
-        })
-      } else if (err.message === "EndDateNotSet") {
-        return res.status(400).json({
-          error:
-            "Cannot set condition to occurred because the outbreak has no endDate.",
         })
       } else if (err.code === 11000) {
         res.status(400).json({
