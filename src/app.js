@@ -2,9 +2,10 @@ import {} from "dotenv/config"
 import mongoose from "mongoose"
 import express from "express"
 
-import { zoneRoutes } from "./routes/zoneRoutes.js"
 import { virusRoutes } from "./routes/virusRoutes.js"
-import { outbreakRoutes } from "./routes/outbreakRoutes.js";
+import { outbreakRoutes } from "./routes/outbreakRoutes.js"
+import { zoneRoutes } from "./routes/zoneRoutes.js"
+import { countryRoutes } from "./routes/countryRoutes.js"
 import logger from "./logger.js"
 
 const mongoConnectionString = process.env.DB_CONNECTION_STRING
@@ -25,4 +26,5 @@ app.listen(port, () => {
 
 app.use("/api/viruses", virusRoutes)
 app.use("/api/zones", zoneRoutes)
+app.use("/api/countries", countryRoutes)
 app.use("/api/outbreaks", outbreakRoutes)
