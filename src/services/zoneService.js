@@ -6,16 +6,16 @@ class ZoneService {
     await zone.save()
   }
   async list() {
-    return await Zone.find()
+    return await Zone.find()/* .populate("Countries") */
   }
   async listByName(name) {
-    return await Zone.findOne({ name: name }).exec()
+    return await Zone.findOne({ name: name })/* .populate("Countries") */
   }
   async listByCode(cz) {
-    return await Zone.findOne({ cz: cz }).exec()
+    return await Zone.findOne({ cz: cz })/* .populate("Countries") */
   }
   async editByCode(cz, data) {
-    const zone = await Zone.findOne({ cz: cz })
+    const zone = await Zone.findOne({ cz: cz })/* .populate("Countries") */
     if (!zone) {
       const error = new Error()
       error.statusCode = 400

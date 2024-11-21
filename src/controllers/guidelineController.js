@@ -4,23 +4,24 @@ class GuidelineController {
     console.log("POST: /api/guidelines - " + JSON.stringify(req.body))
     try {
       const { cg, outbreak, validityPeriod } = req.body
-      await GuidelineService.save({ cg, outbreak, validityPeriod }, outbreak)
-      res.status(201).json({message: "Guideline created"})
+      await GuidelineService.save({ cg, outbreak, validityPeriod })
+
+      res.status(201).json({ message: "Guideline created" })
     } catch (err) {
+      console.log("err.message:", err.message)
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message}`
         }
         res.status(400).json({ error: errorMessage.trim() })
+      } else if (err.message === "OutbreakNotFound") {
+        res
+          .status(400)
+          .json({ error: "No outbreaks with the given outbreak code (co)" })
       } else if (err.code === 11000) {
         res.status(400).json({
           error: "Duplicate guideline code. Please use unique values.",
-        })
-      } else if (err.statusCode === 400) {
-        res.status(400).json({
-          error:
-            "Outbreak not found. Please provide a valid outbreak identifier.",
         })
       } else {
         res
@@ -75,12 +76,12 @@ class GuidelineController {
   async getGuidelineByCountryAndOutbreak(req, res) {
     console.log(
       "GET:/api/guidelines by Country and Outbreak: " +
-        req.params.cc +
+        /* req.params.cc + */
         req.params.co
     )
     try {
       const guideline = await GuidelineService.listByCountryAndOutbreak(
-        req.params.cc,
+        /* req.params.cc, */
         req.params.co
       )
       if (!guideline) {
@@ -99,11 +100,10 @@ class GuidelineController {
       "PUT:/api/guidelines: " + req.params.cg + " - " + JSON.stringify(req.body)
     )
     try {
-      const { cg, zone, outbreak, validityPeriod } = req.body
+      const { cg, outbreak, validityPeriod } = req.body
       const guideline = await GuidelineService.editByCode(
         req.params.cg,
-        req.body.outbreak,
-        { cg, zone, outbreak, validityPeriod }
+        { cg, outbreak, validityPeriod }
       )
       res.status(201).json({ message: "Guideline updated: ", guideline })
     } catch (err) {
@@ -113,19 +113,14 @@ class GuidelineController {
           errorMessage += `${err.errors[field].message}`
         }
         res.status(400).json({ error: errorMessage.trim() })
-      } else if (err.statusCode === 400) {
-        if (err.message === "Outbreak not found") {
-          res
-            .status(400)
-            .json({
-              error:
-                "Outbreak not found. Please provide a valid outbreak identifier.",
-            })
-        } else {
-          res
-            .status(400)
-            .json({ error: "Guideline not found with the given code." })
-        }
+      } else if (err.message === "GuidelineNotFound") {
+        res
+          .status(400)
+          .json({ error: "Guideline not found with the given guideline code" })
+      } else if (err.message === "OutbreakNotFound") {
+        res
+          .status(400)
+          .json({ error: "Outbreak not found with the given outbreak code" })
       } else if (err.code === 11000) {
         res.status(400).json({
           error: "Duplicate guideline code. Please use unique values.",

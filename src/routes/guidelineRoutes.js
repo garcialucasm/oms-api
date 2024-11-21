@@ -8,7 +8,7 @@ router.post("/", guidelineController.createGuideline)
 router.get("/", guidelineController.getAllGuidelines)
 router.get("/cg/:cg", guidelineController.getGuidelinesByCode)
 router.get("/status/:status", guidelineController.getGuidelinesByStatus)
-router.get("/cc/co", guidelineController.getGuidelineByCountryAndOutbreak)
+router.get("/co/:co", guidelineController.getGuidelineByCountryAndOutbreak)
 router.put("/:cg", guidelineController.updateGuidelineByCode)
 router.delete("/:cg", guidelineController.deleteGuidelineByCode)
 

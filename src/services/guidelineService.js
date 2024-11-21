@@ -1,16 +1,16 @@
 import Guideline from "../models/guidelineModel.js"
+import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
 import Outbreak from "../models/outbreakModel.js"
+import Zone from "../models/zoneModel.js"
 
 class GuidelineService {
-  async save(data, outbreak) {
-    const outbreakDoc = await Outbreak.find({ outbreak: outbreak })
-    if (!outbreakDoc) {
-      const error = new Error()
-      error.statusCode = 400
-      error.message = "Outbreak not found"
-      throw error
-    }
-    const guideline = new Guideline(data)
+  async save({ cg, outbreak, validityPeriod }) {
+    const guidelineInputDTO = new GuidelineInputDTO(
+      cg,
+      outbreak,
+      validityPeriod
+    )
+    const guideline = await guidelineInputDTO.toGuideline()
     await guideline.save()
   }
   async list() {
@@ -24,23 +24,40 @@ class GuidelineService {
       "outbreak"
     )
   }
+  /* async listByCountryAndOutbreak(co) {
+    const guidelineComplete = await Guideline.find({}).populate({
+      path: "outbreak",
+      populate: { path: "cz" },
+    })
+    const guidelinesByCO = guidelineComplete.filter(
+      (guideline) => guideline.outbreak.co === co
+    )
+    const guidelinesByCC = guidelinesByCO.filter(
+      (guideline) => guideline.outbreak.cz.cz === cc
+    )
+    return guidelinesByCC
+  } */
+  async editByCode(code, data) {
+    const { cg, outbreak, validityPeriod } = data
 
-  async editByCode(cg, outbreak, data) {
-    const outbreakDoc = await Outbreak.find({ outbreak: outbreak })
-    if (!outbreakDoc) {
-      const error = new Error()
-      error.statusCode = 400
-      throw error
-    }
-    const guideline = await Guideline.findOne({ cg: cg })
+    const guideline = await Guideline.findOne({ cg: code })
     if (!guideline) {
-      const error = new Error()
-      error.statusCode = 400
-      throw error
+      throw new Error("GuidelineNotFound")
     }
-    Object.assign(guideline, data)
+
+    const outbreakDoc = await Outbreak.findOne({ _id: outbreak })
+    if (!outbreakDoc && outbreak !== undefined) {
+      throw new Error("OutbreakNotFound")
+    }
+
+    guideline.cg = cg || guideline.cg
+    guideline.outbreak = outbreakDoc?._id || guideline.outbreak
+    guideline.validityPeriod = validityPeriod || guideline.validityPeriod
+
     await guideline.save()
-    return guideline.populate("Outbreak")
+    const populatedGuideline = await Guideline.findOne({outbreak: guideline.outbreak}).populate({path: "outbreak", populate: {path: "cz"}})
+
+    return populatedGuideline
   }
   async removeByCode(cg) {
     const guideline = await Guideline.findOne({ cg: cg }).exec()
