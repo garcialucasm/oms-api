@@ -3,16 +3,23 @@ import request from "supertest"
 import mongoose from "mongoose"
 
 import { app, server } from "../src/app.js"
-import logger from "../src/logger.js"
 
 dotenv.config()
 
 describe("Country API Tests", () => {
+  let zoneId
+
   beforeAll(async () => {
-    await mongoose.connect(process.env.DB_CONNECTION_STRING, {
+    await mongoose.connect(process.env.DB_TEST_CONNECTION_STRING, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
+    /* ------------------------- Create a new zone first ------------------------ */
+    const newZone = { cz: "A2", name: "ZonaA2" }
+    const zoneResponse = await request(app).post("/api/zones").send(newZone)
+    expect(zoneResponse.status).toBe(201)
+    zoneId = zoneResponse.body.data._id
+    /* -------------------------------------------------------------------------- */
   })
 
   afterAll(async () => {
@@ -22,20 +29,21 @@ describe("Country API Tests", () => {
   })
 
   describe("POST /api/countries", () => {
-    it("should create a new country", async () => {
-      const newCountry = { cc: "PT", name: "Portugal" }
+    test("should create a new country", async () => {
+      const newCountry = { cc: "PT", name: "Portugal", zone: zoneId }
 
-      const response = await request(app)
+      const countryResponse = await request(app)
         .post("/api/countries")
         .send(newCountry)
-
-      expect(response.status).toBe(201)
-      expect(response.body.data.cc).toBe("PT")
-      expect(response.body.data.name).toBe("Portugal")
+      expect(countryResponse.status).toBe(201)
+      expect(countryResponse.body.data.cc).toBe("PT")
+      expect(countryResponse.body.data.name).toBe("Portugal")
+      expect(countryResponse.body.data.zone).toBe(zoneId) // Verify the zone ID is correctly linked
     })
 
-    it("should not create an already existing country", async () => {
-      const newCountry = { cc: "ES", name: "Spain" }
+    test("should not create an already existing country", async () => {
+      const newCountry = { cc: "ES", name: "Spain", zone: zoneId }
+      newCountry.zone = zoneId
 
       const firstResponse = await request(app)
         .post("/api/countries")
@@ -55,7 +63,7 @@ describe("Country API Tests", () => {
       )
     })
 
-    it("should return validation error for missing name field", async () => {
+    test("should return validation error for missing name field", async () => {
       const invalidCountry = { cc: "PT" }
 
       const response = await request(app)
@@ -66,7 +74,7 @@ describe("Country API Tests", () => {
       expect(response.body.message).toContain("Country name is required")
     })
 
-    it("should return validation error for missing cc field", async () => {
+    test("should return validation error for missing cc field", async () => {
       const invalidCountry = { name: "Portugal" }
 
       const response = await request(app)
@@ -79,7 +87,7 @@ describe("Country API Tests", () => {
   })
 
   describe("GET /api/countries", () => {
-    it("should return all countries", async () => {
+    test("should return all countries", async () => {
       const response = await request(app).get("/api/countries")
 
       expect(response.status).toBe(200)
@@ -88,14 +96,14 @@ describe("Country API Tests", () => {
   })
 
   describe("GET /api/countries/cc/:cc", () => {
-    it("should retrieve a country by its code", async () => {
+    test("should retrieve a country by its code", async () => {
       const response = await request(app).get("/api/countries/cc/PT")
 
       expect(response.status).toBe(200)
       expect(response.body.data[0].cc).toBe("PT")
     })
 
-    it("should return 404 if the country is not found", async () => {
+    test("should return 404 if the country is not found", async () => {
       const response = await request(app).get("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
@@ -103,14 +111,14 @@ describe("Country API Tests", () => {
   })
 
   describe("DELETE /api/countries/cc/:cc", () => {
-    it("should delete a country by its code", async () => {
+    test("should delete a country by its code", async () => {
       const response = await request(app).delete("/api/countries/cc/PT")
 
       expect(response.status).toBe(200)
       expect(response.body.message).toContain("Country deleted successfully")
     })
 
-    it("should return 404 if the country is not found for deletion", async () => {
+    test("should return 404 if the country is not found for deletion", async () => {
       const response = await request(app).delete("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
