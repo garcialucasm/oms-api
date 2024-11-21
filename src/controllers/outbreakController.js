@@ -6,12 +6,12 @@ import Zone from "../models/zoneModel.js"
 class OutbreakController {
   async create(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate } = req.body
+      const { co, virus, zone, startDate, endDate } = req.body
 
       const outbreak = await OutbreakService.create({
         co,
-        cv,
-        cz,
+        virus,
+        zone,
         startDate,
         endDate,
       })
@@ -101,7 +101,7 @@ class OutbreakController {
         res.status(404).json({ error: "Virus not found" })
       }
 
-      const outbreak = await OutbreakService.list({ cv: virus._id })
+      const outbreak = await OutbreakService.list({ virus: virus._id })
       if (!outbreak || outbreak.length === 0) {
         res.status(404).json({ error: "Outbreaks not found" })
       }
@@ -119,7 +119,7 @@ class OutbreakController {
       if (!zone) {
         res.status(404).json({ error: "Zone not found" })
       }
-      const outbreak = await OutbreakService.list({ cz: zone._id })
+      const outbreak = await OutbreakService.list({ zone: zone._id })
       if (!outbreak || outbreak.length === 0) {
         res.status(404).json({ error: "Outbreaks not found" })
       }
@@ -153,12 +153,12 @@ class OutbreakController {
 
   async update(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate } = req.body
+      const { co, virus, zone, startDate, endDate } = req.body
 
       const outbreak = await OutbreakService.update(req.params.co, {
         co,
-        cv,
-        cz,
+        virus,
+        zone,
         startDate,
         endDate,
       })
@@ -217,15 +217,15 @@ class OutbreakController {
 
   async updateByZoneCodeVirusCode(req, res) {
     try {
-      const { co, cv, cz, startDate, endDate } = req.body
+      const { co, virus, zone, startDate, endDate } = req.body
 
       const outbreak = await OutbreakService.updateByCodes(
         req.params.cz,
         req.params.cv,
         {
           co,
-          cv,
-          cz,
+          virus,
+          zone,
           startDate,
           endDate,
         }
