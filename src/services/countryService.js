@@ -1,10 +1,17 @@
 import logger from "../logger.js"
 import Country from "../models/countryModel.js"
+import Zone from "../models/zoneModel.js"
 
 class CountryService {
   async save(data) {
     logger.debug("CountryService - save")
+    const zone = await Zone.findOne({ cz: data.zone })
 
+    if (!zone) {
+      throw new Error("ZoneNotFound")
+    }
+
+    data.zone = zone.id
     const country = new Country(data)
 
     await country.save()
@@ -16,12 +23,7 @@ class CountryService {
     const countries = await Country.find(data ?? data).exec()
 
     if (countries.length === 0) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
-
-      logger.error("CountryService - list - ", error.message)
-      throw error
+      throw new Error("CountryNotFound")
     }
 
     return countries
@@ -33,12 +35,7 @@ class CountryService {
     const country = await Country.findOne({ cc }).exec()
 
     if (country.length === 0) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
-
-      logger.error("CountryService - update - ", error.message)
-      throw error
+      throw new Error("CountryNotFound")
     }
 
     Object.assign(country, data)
@@ -51,12 +48,7 @@ class CountryService {
     const country = await Country.findOne({ cc }).exec()
 
     if (!country) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
-
-      logger.error("CountryService - delete - ", error.message)
-      throw error
+      throw new Error("CountryNotFound")
     }
 
     await country.deleteOne()

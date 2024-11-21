@@ -7,33 +7,29 @@ class CountryController {
     try {
       await CountryService.save(req.body)
       res.status(201).json({
-        sucess: true,
         message: "Country created successfully",
         data: req.body,
       })
     } catch (err) {
-      logger.error(
-        "CountryController - Error creating country - ",
-        err
-      )
+      logger.error("CountryController - Error creating country - ", err)
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message}`
         }
-        res
-          .status(400)
-          .json({ sucess: false, message: errorMessage.trim(), error: err })
+        res.status(400).json({ message: errorMessage.trim(), error: err })
       } else if (err.code === 11000) {
         res.status(400).json({
-          sucess: false,
           message:
             "Duplicate country code or country name. Please use unique values.",
           error: err,
         })
+      } else if ((err.message = "ZoneNotFound")) {
+        res
+          .status(400)
+          .json({ error: "Zone not found with the given zone code" })
       } else {
         res.status(500).json({
-          sucess: false,
           message: "Failed to create country",
           error: err,
         })
@@ -49,14 +45,12 @@ class CountryController {
     try {
       const countries = await CountryService.list()
       res.status(200).json({
-        sucess: true,
         message: "Countries retrieved successfully",
         data: countries,
       })
     } catch (err) {
       logger.error("CountryController - Error retrieving countries - ", err)
-      res.status(err.status || 500).json({
-        sucess: false,
+      res.status(500).json({
         message: "Failed to retrieve countries",
         error: err,
       })
@@ -69,7 +63,6 @@ class CountryController {
     try {
       const country = await CountryService.list({ cc })
       res.status(200).json({
-        sucess: true,
         message: "Country retrieved by code",
         data: country,
       })
@@ -79,7 +72,6 @@ class CountryController {
         err
       )
       res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
-        sucess: false,
         message: "Failed to retrieve country by code",
         error: err,
       })
@@ -94,7 +86,6 @@ class CountryController {
         name: countryName,
       })
       res.status(200).json({
-        sucess: true,
         message: "Country retrieved by name",
         data: country,
       })
@@ -104,7 +95,6 @@ class CountryController {
         err
       )
       res.status(err.status || 500).json({
-        sucess: false,
         message: "Failed to retrieve country by name",
         error: err,
       })
@@ -118,17 +108,23 @@ class CountryController {
     try {
       const updatedCountry = await CountryService.update(cc, req.body)
       res.status(200).json({
-        sucess: true,
         message: "Country updated successfully",
         data: updatedCountry,
       })
     } catch (err) {
-      logger.error("CountryController - Error updating country - ", err)
-      res.status(err.status || 500).json({
-        sucess: false,
-        message: "Failed to update country",
-        error: err,
-      })
+      if ((err.message = "CountryNotFound")) {
+        res.status(404).json({ error: "Country not found" })
+      } else if ((err.message = "ZoneNotFound")) {
+        res
+          .status(400)
+          .json({ error: "Zone not found with the given zone code" })
+      } else {
+        logger.error("CountryController - Error updating country - ", err)
+        res.status(err.status || 500).json({
+          message: "Failed to update country",
+          error: err,
+        })
+      }
     }
   }
 
@@ -138,14 +134,12 @@ class CountryController {
     try {
       const deletedCountry = await CountryService.delete(cc)
       res.status(200).json({
-        sucess: true,
         message: "Country deleted successfully",
         data: deletedCountry,
       })
     } catch (err) {
       logger.error("CountryController - Error deleting country - ", err)
       res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
-        sucess: false,
         message: "Failed to delete country",
         error: err,
       })
