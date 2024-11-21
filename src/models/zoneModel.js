@@ -15,13 +15,7 @@ const ZoneSchema = new Schema(
     },
     name: String,
   },
-  { collection: "zones"/* , toJSON: { virtuals: true }, toObject: { virtuals: true } */ }
+  { collection: "zones"}
 );
-
-// ZoneSchema.virtual("countries", {
-//   ref: "Country", 
-//   localField: "_id", 
-//   foreignField: "zone", 
-// });
 
 export default model("Zone", ZoneSchema);
