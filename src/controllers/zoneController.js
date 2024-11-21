@@ -3,7 +3,9 @@ import logger from "../logger.js"
 
 class ZoneController {
   async createZone(req, res) {
-    logger.info("POST: /api/zones - " + JSON.stringify(req.body))
+    logger.info("POST: /api/zones - ", {
+      body: JSON.stringify(req.body),
+    })
     try {
       const { cz, name } = req.body
       await ZoneService.save({ cz, name })
@@ -64,9 +66,9 @@ class ZoneController {
   }
 
   async updateZoneByCode(req, res) {
-    logger.info(
-      "PUT:/api/zones: " + req.params.cz + " - " + JSON.stringify(req.body)
-    )
+    logger.info("PUT:/api/zones: " + req.params.cz + " - ", {
+      body: JSON.stringify(req.body),
+    })
     try {
       const { cz, name } = req.body
       const zone = await ZoneService.editByCode(req.params.cz, { cz, name })
