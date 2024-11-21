@@ -16,6 +16,11 @@ const CountrySchema = new Schema(
       trim: true,
       uppercase: true,
     },
+    zone: {
+      type: Schema.Types.ObjectId,
+      ref: "Zone",
+      required: true
+    }
   },
   { collection: "countries", timestamps: true }
 )

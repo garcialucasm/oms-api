@@ -44,7 +44,7 @@ const OutbreakSchema = new Schema(
         ]
     }
   },
-  { collection: "outbreaks" }
+  { collection: "outbreaks", timestamps: true }
 );
 
 export default model("Outbreak", OutbreakSchema);
