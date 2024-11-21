@@ -5,7 +5,7 @@ import OutbreakInputDTO from "../DTO/outbreakInputDTO.js"
 
 class OutbreakService {
   async create(data) {
-    const { co, cv, cz, startDate, endDate, condition } = data
+    const { co, cv, cz, startDate, endDate } = data
 
     if (!co || !cv || !cz || !startDate) {
       throw new Error("MissingRequiredFields")
@@ -30,7 +30,13 @@ class OutbreakService {
       throw new Error("OutbreakAlreadyExists")
     }
 
-    if (endDate == null && condition == "occurred") throw new Error("NoEndDate")
+    //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
+    let condition
+    if (endDate !== null) {
+      condition = "occurred"
+    } else {
+      condition = "active"
+    }
 
     const parsedStartDate = new Date(startDate)
     const parsedEndDate = endDate ? new Date(endDate) : null
@@ -51,23 +57,15 @@ class OutbreakService {
   }
 
   async getAll() {
-    return await Outbreak.find()
-      .populate("cv")
-      .populate("cz")
-      /*    .select('+endDate')  // Explicitly select 'endDate' even though it's set to 'select: false' */
-      .exec()
+    return await Outbreak.find().populate("cv").populate("cz").exec()
   }
 
   async list(data) {
-    return await Outbreak.find(data)
-      .populate("cv")
-      .populate("cz")
-      /*    .select('+endDate')  // Explicitly select 'endDate' even though it's set to 'select: false' */
-      .exec()
+    return await Outbreak.find(data).populate("cv").populate("cz").exec()
   }
 
   async update(code, data) {
-    const { co, cv, cz, startDate, endDate, condition } = data
+    const { co, cv, cz, startDate, endDate } = data
 
     const outbreak = await Outbreak.findOne({ co: code })
     if (!outbreak) {
@@ -99,14 +97,6 @@ class OutbreakService {
       }
     }
 
-    //Validação para não deixar alterar a condition para "occurred" quando não tem endDate
-    if (outbreak.endDate !== null && condition === "active")
-      throw new Error("EndDateAlreadySet")
-
-    //Validação para não deixar alterar a condition para "active" quando já tem endDate
-    if (outbreak.endDate === null && condition === "occurred")
-      throw new Error("EndDateNotSet")
-
     //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
     let updatedCondition
     if (outbreak.endDate !== null) {
@@ -132,7 +122,7 @@ class OutbreakService {
   }
 
   async updateByCodes(codeZ, codeV, data) {
-    const { co, cv, cz, startDate, endDate, condition } = data
+    const { co, cv, cz, startDate, endDate } = data
 
     //Validar dados da procura
     const ZoneRoute = await Zone.findOne({ cz: codeZ })
@@ -178,14 +168,6 @@ class OutbreakService {
         throw new Error("OutbreakAlreadyExists")
       }
     }
-
-    //Validação para não deixar alterar a condition para "occurred" quando não tem endDate
-    if (outbreak.endDate !== null && condition === "active")
-      throw new Error("EndDateAlreadySet")
-
-    //Validação para não deixar alterar a condition para "active" quando já tem endDate
-    if (outbreak.endDate === null && condition === "occurred")
-      throw new Error("EndDateNotSet")
 
     //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
     let updatedCondition
