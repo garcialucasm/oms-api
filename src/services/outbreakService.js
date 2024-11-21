@@ -83,6 +83,16 @@ class OutbreakService {
     return await Outbreak.find(data).populate("cv").populate("cz").exec()
   }
 
+  async listActOcc(data) {
+    if (data !== "active" && data !== "occurred") {
+      throw new Error("InvalidParameters")
+    }
+    return await Outbreak.find({ condition: data })
+      .populate("cv")
+      .populate("cz")
+      .exec()
+  }
+
   async update(code, data) {
     const { co, cv, cz, startDate, endDate } = data
 

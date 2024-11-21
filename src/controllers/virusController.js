@@ -3,17 +3,17 @@ class VirusController {
   async create(req, res) {
     try {
       const { cv, name } = req.body
-      await VirusService.create({ cv, name })
-      return res.status(201).json("Virus created")
+      const virus = await VirusService.create({ cv, name })
+      res.status(201).json({ message: "Virus created!", data: virus })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message} `
         }
-        res.status(400).json({ error: errorMessage.trim() });
+        res.status(400).json({ error: errorMessage.trim() })
       } else if (err.message === "MissingRequiredFields") {
-        return res.status(400).json({ error: "Missing required fields." });
+        res.status(400).json({ error: "Missing required fields." })
       } else if (err.code === 11000) {
         res.status(400).json({
           error:
@@ -28,9 +28,9 @@ class VirusController {
   async getAll(req, res) {
     try {
       const virus = await VirusService.getAll()
-      res.status(200).json(virus)
+      res.status(200).json({ message: "Viruses found!", virus })
       if (!virus) {
-        return res.status(404).json({ error: "No virus found" })
+        res.status(404).json({ error: "No virus found" })
       }
     } catch (err) {
       res.status(500).json({ error: "Error retrieving viruses", details: err })
@@ -41,9 +41,9 @@ class VirusController {
     try {
       const virus = await VirusService.list({ name: req.params.name })
       if (!virus) {
-        return res.status(404).json({ error: "Virus not found" })
+        res.status(404).json({ error: "Virus not found" })
       }
-      res.status(200).json(virus)
+      res.status(200).json({ message: "Virus found!", virus })
     } catch (err) {
       res.status(500).json({ error: "Error retrieving virus", details: err })
     }
@@ -53,9 +53,9 @@ class VirusController {
     try {
       const virus = await VirusService.list({ cv: req.params.cv })
       if (!virus) {
-        return res.status(404).json({ error: "Virus not found" })
+        res.status(404).json({ error: "Virus not found" })
       }
-      res.status(200).json(virus)
+      res.status(200).json({ message: "Virus found!", virus })
     } catch (err) {
       res.status(500).json({ error: "Error retrieving virus", details: err })
     }
@@ -63,8 +63,8 @@ class VirusController {
 
   async update(req, res) {
     try {
-      const virus = await VirusService.update(req.params.cv, req.body);
-      res.status(200).json({ message: "Virus updated!", virus });
+      const virus = await VirusService.update(req.params.cv, req.body)
+      res.status(200).json({ message: "Virus updated!", virus })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
