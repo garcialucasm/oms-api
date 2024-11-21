@@ -8,28 +8,12 @@ class OutbreakController {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
 
-      const parsedStartDate = new Date(startDate)
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      if (isNaN(parsedStartDate.getTime())) {
-        return res.status(400).json({ error: "Invalid startDate format" })
-      }
-      if (parsedStartDate > Date.now()) {
-        return res
-          .status(400)
-          .json({ error: "Value of startDate cannot be in the future" })
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format" })
-      }
-
       await OutbreakService.create({
         co,
         cv,
         cz,
-        startDate: parsedStartDate,
-        endDate: parsedEndDate,
+        startDate,
+        endDate,
       })
 
       return res.status(201).json("New Outbreak created!")
@@ -41,6 +25,25 @@ class OutbreakController {
           errorMessage += `${err.errors[field].message} `
         }
         return res.status(400).json({ error: errorMessage.trim() })
+      } else if (err.message === "InvalidStartDateFormat") {
+        return res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        return res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        return res
+          .status(400)
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
+      } else if (err.message === "FutureEndDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
       } else if (err.message === "VirusNotFound") {
         return res
           .status(400)
@@ -163,47 +166,13 @@ class OutbreakController {
   async update(req, res) {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      let parsedStartDate = null
-      if (startDate) {
-        parsedStartDate = new Date(startDate)
-
-        if (isNaN(parsedStartDate.getTime())) {
-          return res.status(400).json({ error: "Invalid startDate format." })
-        }
-
-        if (parsedStartDate > Date.now()) {
-          return res
-            .status(400)
-            .json({ error: "Value of startDate cannot be in the future." })
-        }
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format." })
-      }
-
-      if (parsedEndDate !== null) {
-        if (parsedEndDate < parsedStartDate) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
-          })
-        } else if (parsedEndDate > Date.now()) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
-          })
-        }
-      }
 
       const outbreak = await OutbreakService.update(req.params.co, {
         co,
         cv,
         cz,
-        startDate: parsedStartDate,
-        endDate: parsedEndDate,
+        startDate,
+        endDate,
       })
       res.status(200).json({ message: "Outbreak updated!", outbreak })
     } catch (err) {
@@ -217,6 +186,25 @@ class OutbreakController {
         res
           .status(400)
           .json({ error: "Outbreak not found with the given outbreak code" })
+      } else if (err.message === "InvalidStartDateFormat") {
+        return res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "FutureEndDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        return res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        return res
+          .status(400)
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
@@ -244,40 +232,6 @@ class OutbreakController {
   async updateByZoneCodeVirusCode(req, res) {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      let parsedStartDate = null
-      if (startDate) {
-        parsedStartDate = new Date(startDate)
-
-        if (isNaN(parsedStartDate.getTime())) {
-          return res.status(400).json({ error: "Invalid startDate format." })
-        }
-
-        if (parsedStartDate > Date.now()) {
-          return res
-            .status(400)
-            .json({ error: "Value of startDate cannot be in the future." })
-        }
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format." })
-      }
-
-      if (parsedEndDate !== null) {
-        if (parsedEndDate < parsedStartDate) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
-          })
-        } else if (parsedEndDate > Date.now()) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
-          })
-        }
-      }
 
       const outbreak = await OutbreakService.updateByCodes(
         req.params.cz,
@@ -286,8 +240,8 @@ class OutbreakController {
           co,
           cv,
           cz,
-          startDate: parsedStartDate,
-          endDate: parsedEndDate,
+          startDate,
+          endDate,
         }
       )
       res.status(200).json({ message: "Outbreak updated!", outbreak })
@@ -303,6 +257,25 @@ class OutbreakController {
           error:
             "Outbreak not found with the given pair of zone and virus codes",
         })
+      } else if (err.message === "InvalidStartDateFormat") {
+        return res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "FutureEndDate") {
+        return res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        return res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        return res
+          .status(400)
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
