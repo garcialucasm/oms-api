@@ -20,7 +20,7 @@ mongoose
   .then(() => logger.info("Connected to MongoDB"))
   .catch((error) => logger.error("Could not connect to MongoDB:", error))
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   logger.info(`OMS-API App listening on ports ${port}`)
 })
 
@@ -28,3 +28,5 @@ app.use("/api/viruses", virusRoutes)
 app.use("/api/zones", zoneRoutes)
 app.use("/api/countries", countryRoutes)
 app.use("/api/outbreaks", outbreakRoutes)
+
+export { app, server }
