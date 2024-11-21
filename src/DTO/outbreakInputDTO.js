@@ -3,18 +3,18 @@ import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
 
 class OutbreakInputDTO {
-  constructor(co, cv, cz, startDate, endDate, condition) {
+  constructor(co, virus, zone, startDate, endDate, condition) {
     this.co = co
-    this.cv = cv
-    this.cz = cz
+    this.virus = virus
+    this.zone = zone
     this.startDate = startDate
     this.endDate = endDate
     this.condition = condition
   }
 
   async toOutbreak() {
-    const outbreakVirus = await Virus.findOne({ cv: this.cv })
-    const outbreakZone = await Zone.findOne({ cz: this.cz })
+    const outbreakVirus = await Virus.findOne({ cv: this.virus })
+    const outbreakZone = await Zone.findOne({ cz: this.zone })
 
     if (!outbreakVirus) {
       const error = new Error("Virus not found")
@@ -29,8 +29,8 @@ class OutbreakInputDTO {
 
     return new Outbreak({
       co: this.co,
-      cv: outbreakVirus._id,
-      cz: outbreakZone._id,
+      virus: outbreakVirus._id,
+      zone: outbreakZone._id,
       startDate: this.startDate,
       endDate: this.endDate,
       condition: this.condition,

@@ -11,12 +11,12 @@ const OutbreakSchema = new Schema(
         "Outbreak code must start with 1 numerical character and end with 1 letter.",
       ],
     },
-    cv: {
+    virus: {
       type: Schema.Types.ObjectId,
       ref: "Virus",
       required: true,
     },
-    cz: {
+    zone: {
       type: Schema.Types.ObjectId,
       ref: "Zone",
       required: true,

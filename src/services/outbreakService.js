@@ -5,9 +5,9 @@ import OutbreakInputDTO from "../DTO/outbreakInputDTO.js"
 
 class OutbreakService {
   async create(data) {
-    const { co, cv, cz, startDate, endDate } = data
+    const { co, virus, zone, startDate, endDate } = data
 
-    if (!co || !cv || !cz || !startDate) {
+    if (!co || !virus || !zone || !startDate) {
       throw new Error("MissingRequiredFields")
     }
 
@@ -33,19 +33,19 @@ class OutbreakService {
       }
     }
 
-    const outbreakVirus = await Virus.findOne({ cv: cv })
+    const outbreakVirus = await Virus.findOne({ cv: virus })
     if (!outbreakVirus) {
       throw new Error("VirusNotFound")
     }
 
-    const outbreakZone = await Zone.findOne({ cz: cz })
+    const outbreakZone = await Zone.findOne({ cz: zone })
     if (!outbreakZone) {
       throw new Error("ZoneNotFound")
     }
 
     const outbreakExists = await Outbreak.findOne({
-      cv: outbreakVirus._id,
-      cz: outbreakZone._id,
+      virus: outbreakVirus._id,
+      zone: outbreakZone._id,
       condition: "active",
     })
     if (outbreakExists) {
@@ -62,8 +62,8 @@ class OutbreakService {
 
     const outbreakInputDTO = new OutbreakInputDTO(
       co,
-      cv,
-      cz,
+      virus,
+      zone,
       parsedStartDate,
       parsedEndDate,
       condition
@@ -76,11 +76,11 @@ class OutbreakService {
   }
 
   async getAll() {
-    return await Outbreak.find().populate("cv").populate("cz").exec()
+    return await Outbreak.find().populate("virus").populate("zone").exec()
   }
 
   async list(data) {
-    return await Outbreak.find(data).populate("cv").populate("cz").exec()
+    return await Outbreak.find(data).populate("virus").populate("zone").exec()
   }
 
   async listActOcc(data) {
@@ -88,13 +88,13 @@ class OutbreakService {
       throw new Error("InvalidParameters")
     }
     return await Outbreak.find({ condition: data })
-      .populate("cv")
-      .populate("cz")
+      .populate("virus")
+      .populate("zone")
       .exec()
   }
 
   async update(code, data) {
-    const { co, cv, cz, startDate, endDate } = data
+    const { co, virus, zone, startDate, endDate } = data
 
     const outbreak = await Outbreak.findOne({ co: code })
     if (!outbreak) {
@@ -128,24 +128,24 @@ class OutbreakService {
       }
     }
 
-    const virus = await Virus.findOne({ cv: cv })
-    if (!virus && cv !== undefined) {
+    const virusDB = await Virus.findOne({ cv: virus })
+    if (!virusDB && virus !== undefined) {
       throw new Error("VirusNotFound")
     }
 
-    const zone = await Zone.findOne({ cz: cz })
-    if (!zone && cz !== undefined) {
+    const zoneDB = await Zone.findOne({ cz: zone })
+    if (!zoneDB && zone !== undefined) {
       throw new Error("ZoneNotFound")
     }
 
     //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
     if (
-      (cv !== undefined && virus?._id?.toString() !== outbreak.cv.toString()) ||
-      (cz !== undefined && zone?._id?.toString() !== outbreak.cz.toString())
+      (virus !== undefined && virusDB?._id?.toString() !== outbreak.virus.toString()) ||
+      (zone !== undefined && zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
-        cv: cv !== undefined ? virus?._id : outbreak.cv,
-        cz: cz !== undefined ? zone?._id : outbreak.cz,
+        virus: virus !== undefined ? virusDB?._id : outbreak.virus,
+        zone: zone !== undefined ? zoneDB?._id : outbreak.zone,
         condition: "active",
       })
       if (outbreakExists) {
@@ -164,21 +164,21 @@ class OutbreakService {
     }
 
     outbreak.co = co || outbreak.co
-    outbreak.cv = virus?._id || outbreak.cv
-    outbreak.cz = zone?._id || outbreak.cz
+    outbreak.virus = virusDB?._id || outbreak.virus
+    outbreak.zone = zoneDB?._id || outbreak.zone
     outbreak.startDate = parsedStartDate || outbreak.startDate
     outbreak.endDate = parsedEndDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
     const populatedOutbreak = Outbreak.findOne({ co: outbreak.co })
-      .populate("cv")
-      .populate("cz")
+      .populate("virus")
+      .populate("zone")
     return populatedOutbreak
   }
 
   async updateByCodes(codeZ, codeV, data) {
-    const { co, cv, cz, startDate, endDate } = data
+    const { co, virus, zone, startDate, endDate } = data
 
     //Validar dados da procura
     const ZoneRoute = await Zone.findOne({ cz: codeZ })
@@ -192,8 +192,8 @@ class OutbreakService {
     }
 
     const outbreak = await Outbreak.findOne({
-      cz: ZoneRoute._id,
-      cv: VirusRoute._id,
+      zone: ZoneRoute._id,
+      virus: VirusRoute._id,
     })
     if (!outbreak) {
       throw new Error("OutbreakNotFound")
@@ -228,24 +228,24 @@ class OutbreakService {
     }
 
     //Validar dados do update
-    const virus = await Virus.findOne({ cv: cv })
-    if (!virus && cv !== undefined) {
+    const virusDB = await Virus.findOne({ cv: virus })
+    if (!virusDB && virus !== undefined) {
       throw new Error("VirusNotFound")
     }
 
-    const zone = await Zone.findOne({ cz: cz })
-    if (!zone && cz !== undefined) {
+    const zoneDB = await Zone.findOne({ cz: zone })
+    if (!zoneDB && zone !== undefined) {
       throw new Error("ZoneNotFound")
     }
 
     //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
     if (
-      (cv !== undefined && virus?._id?.toString() !== outbreak.cv.toString()) ||
-      (cz !== undefined && zone?._id?.toString() !== outbreak.cz.toString())
+      (virus !== undefined && virusDB?._id?.toString() !== outbreak.virus.toString()) ||
+      (zone !== undefined && zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
-        cv: cv !== undefined ? virus?._id : outbreak.cv,
-        cz: cz !== undefined ? zone?._id : outbreak.cz,
+        virus: virus !== undefined ? virusDB?._id : outbreak.virus,
+        zone: zone !== undefined ? zoneDB?._id : outbreak.zone,
         condition: "active",
       })
       if (outbreakExists) {
@@ -264,16 +264,16 @@ class OutbreakService {
     }
 
     outbreak.co = co || outbreak.co
-    outbreak.cv = virus?._id || outbreak.cv
-    outbreak.cz = zone?._id || outbreak.cz
+    outbreak.virus = virusDB?._id || outbreak.virus
+    outbreak.zone = zoneDB?._id || outbreak.zone
     outbreak.startDate = parsedStartDate || outbreak.startDate
     outbreak.endDate = parsedEndDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
     const populatedOutbreak = Outbreak.findOne({ co: outbreak.co })
-      .populate("cv")
-      .populate("cz")
+      .populate("virus")
+      .populate("zone")
     return populatedOutbreak
   }
 
