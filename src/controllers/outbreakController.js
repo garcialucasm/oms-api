@@ -8,31 +8,15 @@ class OutbreakController {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
 
-      const parsedStartDate = new Date(startDate)
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      if (isNaN(parsedStartDate.getTime())) {
-        return res.status(400).json({ error: "Invalid startDate format" })
-      }
-      if (parsedStartDate > Date.now()) {
-        return res
-          .status(400)
-          .json({ error: "Value of startDate cannot be in the future" })
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format" })
-      }
-
-      await OutbreakService.create({
+      const outbreak = await OutbreakService.create({
         co,
         cv,
         cz,
-        startDate: parsedStartDate,
-        endDate: parsedEndDate,
+        startDate,
+        endDate,
       })
 
-      return res.status(201).json("New Outbreak created!")
+      res.status(201).json({ message: "New Outbreak created!", data: outbreak })
     } catch (err) {
       console.error("Error in createOutbreak:", err)
       if (err.name === "ValidationError") {
@@ -40,31 +24,46 @@ class OutbreakController {
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message} `
         }
-        return res.status(400).json({ error: errorMessage.trim() })
+        res.status(400).json({ error: errorMessage.trim() })
+      } else if (err.message === "InvalidStartDateFormat") {
+        res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        res.status(400).json({
+          error:
+            "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+        })
+      } else if (err.message === "FutureEndDate") {
+        res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
       } else if (err.message === "VirusNotFound") {
-        return res
+        res
           .status(400)
           .json({ error: "Virus not found with the given virus code" })
       } else if (err.message === "ZoneNotFound") {
-        return res
+        res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else if (err.message === "MissingRequiredFields") {
-        return res.status(400).json({ error: "Missing required fields" })
+        res.status(400).json({ error: "Missing required fields" })
       } else if (err.code === 11000) {
-        return res.status(400).json({
+        res.status(400).json({
           error:
             "Duplicate outbreak code. Please use a unique value for this field.",
         })
       } else if (err.message === "OutbreakAlreadyExists") {
-        return res.status(400).json({
+        res.status(400).json({
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
         })
       } else {
-        return res
-          .status(500)
-          .json({ error: "Error saving Outbreak", details: err })
+        res.status(500).json({ error: "Error saving Outbreak", details: err })
       }
     }
   }
@@ -73,9 +72,9 @@ class OutbreakController {
     try {
       const outbreaks = await OutbreakService.getAll()
       if (!outbreaks) {
-        return res.status(404).json({ error: "No outbreaks not found" })
+        res.status(404).json({ error: "No outbreaks not found" })
       }
-      res.status(200).json(outbreaks)
+      res.status(200).json({ message: "Outbreaks found!", data: outbreaks })
     } catch (err) {
       res
         .status(500)
@@ -87,9 +86,9 @@ class OutbreakController {
     try {
       const outbreak = await OutbreakService.list({ co: req.params.co })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ error: "Outbreak not found" })
+        res.status(404).json({ error: "Outbreak not found" })
       }
-      res.status(200).json(outbreak)
+      res.status(200).json({ message: "Outbreak found!", data: outbreak })
     } catch (err) {
       res.status(500).json({ error: "Error retrieving outbreak", details: err })
     }
@@ -99,14 +98,14 @@ class OutbreakController {
     try {
       const virus = await Virus.findOne({ cv: req.params.cv })
       if (!virus) {
-        return res.status(404).json({ error: "Virus not found" })
+        res.status(404).json({ error: "Virus not found" })
       }
 
       const outbreak = await OutbreakService.list({ cv: virus._id })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ error: "Outbreaks not found" })
+        res.status(404).json({ error: "Outbreaks not found" })
       }
-      res.status(200).json(outbreak)
+      res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
       res
         .status(500)
@@ -118,13 +117,13 @@ class OutbreakController {
     try {
       const zone = await Zone.findOne({ cz: req.params.cz })
       if (!zone) {
-        return res.status(404).json({ error: "Zone not found" })
+        res.status(404).json({ error: "Zone not found" })
       }
       const outbreak = await OutbreakService.list({ cz: zone._id })
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ error: "Outbreaks not found" })
+        res.status(404).json({ error: "Outbreaks not found" })
       }
-      res.status(200).json(outbreak)
+      res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
       res
         .status(500)
@@ -132,80 +131,38 @@ class OutbreakController {
     }
   }
 
-  async getAllActive(req, res) {
+  async getAllByCondition(req, res) {
     try {
-      const outbreak = await OutbreakService.list({ condition: "active" })
+      const outbreak = await OutbreakService.listActOcc(req.params.condition)
       if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ error: "Outbreaks not found" })
+        res.status(404).json({ error: "Outbreaks not found" })
       }
-      res.status(200).json(outbreak)
+      res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
-      res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err })
-    }
-  }
-
-  async getAllOccurred(req, res) {
-    try {
-      const outbreak = await OutbreakService.list({ condition: "occurred" })
-      if (!outbreak || outbreak.length === 0) {
-        return res.status(404).json({ error: "Outbreaks not found" })
+      if ((err.message = "InvalidParameters")) {
+        res
+          .status(404)
+          .json({ error: "Invalid search parameter. Try active or occurred." })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving outbreaks", details: err })
       }
-      res.status(200).json(outbreak)
-    } catch (err) {
-      res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err })
     }
   }
 
   async update(req, res) {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      let parsedStartDate = null
-      if (startDate) {
-        parsedStartDate = new Date(startDate)
-
-        if (isNaN(parsedStartDate.getTime())) {
-          return res.status(400).json({ error: "Invalid startDate format." })
-        }
-
-        if (parsedStartDate > Date.now()) {
-          return res
-            .status(400)
-            .json({ error: "Value of startDate cannot be in the future." })
-        }
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format." })
-      }
-
-      if (parsedEndDate !== null) {
-        if (parsedEndDate < parsedStartDate) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
-          })
-        } else if (parsedEndDate > Date.now()) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
-          })
-        }
-      }
 
       const outbreak = await OutbreakService.update(req.params.co, {
         co,
         cv,
         cz,
-        startDate: parsedStartDate,
-        endDate: parsedEndDate,
+        startDate,
+        endDate,
       })
-      res.status(200).json({ message: "Outbreak updated!", outbreak })
+      res.status(200).json({ message: "Outbreak updated!", data: outbreak })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
@@ -217,6 +174,23 @@ class OutbreakController {
         res
           .status(400)
           .json({ error: "Outbreak not found with the given outbreak code" })
+      } else if (err.message === "InvalidStartDateFormat") {
+        res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "FutureEndDate") {
+        res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        res.status(400).json({
+          error:
+            "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+        })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
@@ -226,7 +200,7 @@ class OutbreakController {
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else if (err.message === "OutbreakAlreadyExists") {
-        return res.status(400).json({
+        res.status(400).json({
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
         })
@@ -244,40 +218,6 @@ class OutbreakController {
   async updateByZoneCodeVirusCode(req, res) {
     try {
       const { co, cv, cz, startDate, endDate } = req.body
-      const parsedEndDate = endDate ? new Date(endDate) : null
-
-      let parsedStartDate = null
-      if (startDate) {
-        parsedStartDate = new Date(startDate)
-
-        if (isNaN(parsedStartDate.getTime())) {
-          return res.status(400).json({ error: "Invalid startDate format." })
-        }
-
-        if (parsedStartDate > Date.now()) {
-          return res
-            .status(400)
-            .json({ error: "Value of startDate cannot be in the future." })
-        }
-      }
-
-      if (endDate && isNaN(parsedEndDate.getTime())) {
-        return res.status(400).json({ error: "Invalid endDate format." })
-      }
-
-      if (parsedEndDate !== null) {
-        if (parsedEndDate < parsedStartDate) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
-          })
-        } else if (parsedEndDate > Date.now()) {
-          return res.status(400).json({
-            error:
-              "endDate cannot take place in the future. Please insert an endDate prior or equal to the current date.",
-          })
-        }
-      }
 
       const outbreak = await OutbreakService.updateByCodes(
         req.params.cz,
@@ -286,11 +226,11 @@ class OutbreakController {
           co,
           cv,
           cz,
-          startDate: parsedStartDate,
-          endDate: parsedEndDate,
+          startDate,
+          endDate,
         }
       )
-      res.status(200).json({ message: "Outbreak updated!", outbreak })
+      res.status(200).json({ message: "Outbreak updated!", data: outbreak })
     } catch (err) {
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
@@ -303,6 +243,23 @@ class OutbreakController {
           error:
             "Outbreak not found with the given pair of zone and virus codes",
         })
+      } else if (err.message === "InvalidStartDateFormat") {
+        res.status(400).json({ error: "Invalid startDate format" })
+      } else if (err.message === "FutureStartDate") {
+        res
+          .status(400)
+          .json({ error: "Value of startDate cannot be in the future" })
+      } else if (err.message === "FutureEndDate") {
+        res
+          .status(400)
+          .json({ error: "Value of endDate cannot be in the future" })
+      } else if (err.message === "InvalidEndDateFormat") {
+        res.status(400).json({ error: "Invalid endDate format" })
+      } else if (err.message === "EndDateBeforeStartDate") {
+        res.status(400).json({
+          error:
+            "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+        })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
@@ -312,7 +269,7 @@ class OutbreakController {
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else if (err.message === "OutbreakAlreadyExists") {
-        return res.status(400).json({
+        res.status(400).json({
           error:
             "Already exists an active outbreak in this zone caused by this virus.",
         })

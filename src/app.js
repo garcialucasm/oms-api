@@ -22,7 +22,7 @@ mongoose
   .then(() => logger.info("Connected to MongoDB"))
   .catch((error) => logger.error("Could not connect to MongoDB:", error))
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   logger.info(`OMS-API App listening on ports ${port}`)
 })
 
@@ -45,3 +45,4 @@ setTimeout(() => {
   GuidelineService.updateValidity() 
   setInterval(() => { GuidelineService.updateValidity()}, 24 * 60 * 60 * 1000) 
 }, timeUntilMidnight())
+export { app, server }

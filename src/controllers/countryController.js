@@ -144,7 +144,7 @@ class CountryController {
       })
     } catch (err) {
       logger.error("CountryController - Error deleting country - ", err)
-      res.status(err.status || 500).json({
+      res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
         sucess: false,
         message: "Failed to delete country",
         error: err,
