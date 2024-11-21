@@ -10,7 +10,7 @@ class OutbreakService {
     if (!co || !cv || !cz || !startDate) {
       throw new Error("MissingRequiredFields")
     }
-    
+
     const parsedStartDate = new Date(startDate)
     const parsedEndDate = endDate ? new Date(endDate) : null
 

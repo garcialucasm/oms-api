@@ -13,7 +13,7 @@ class OutbreakController {
         cv,
         cz,
         startDate,
-        endDate
+        endDate,
       })
 
       return res.status(201).json("New Outbreak created!")
@@ -26,21 +26,20 @@ class OutbreakController {
         }
         return res.status(400).json({ error: errorMessage.trim() })
       } else if (err.message === "InvalidStartDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid startDate format" })
+        return res.status(400).json({ error: "Invalid startDate format" })
       } else if (err.message === "FutureStartDate") {
         return res
           .status(400)
           .json({ error: "Value of startDate cannot be in the future" })
       } else if (err.message === "InvalidEndDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid endDate format" })
+        return res.status(400).json({ error: "Invalid endDate format" })
       } else if (err.message === "EndDateBeforeStartDate") {
         return res
           .status(400)
-          .json({ error: "endDate cannot take place before startDate. Please insert an endDate posterior to startDate." })
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
       } else if (err.message === "FutureEndDate") {
         return res
           .status(400)
@@ -187,10 +186,8 @@ class OutbreakController {
         res
           .status(400)
           .json({ error: "Outbreak not found with the given outbreak code" })
-       } else if (err.message === "InvalidStartDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid startDate format" })
+      } else if (err.message === "InvalidStartDateFormat") {
+        return res.status(400).json({ error: "Invalid startDate format" })
       } else if (err.message === "FutureStartDate") {
         return res
           .status(400)
@@ -200,13 +197,14 @@ class OutbreakController {
           .status(400)
           .json({ error: "Value of endDate cannot be in the future" })
       } else if (err.message === "InvalidEndDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid endDate format" })
+        return res.status(400).json({ error: "Invalid endDate format" })
       } else if (err.message === "EndDateBeforeStartDate") {
         return res
           .status(400)
-          .json({ error: "endDate cannot take place before startDate. Please insert an endDate posterior to startDate." })
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
@@ -260,9 +258,7 @@ class OutbreakController {
             "Outbreak not found with the given pair of zone and virus codes",
         })
       } else if (err.message === "InvalidStartDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid startDate format" })
+        return res.status(400).json({ error: "Invalid startDate format" })
       } else if (err.message === "FutureStartDate") {
         return res
           .status(400)
@@ -272,13 +268,14 @@ class OutbreakController {
           .status(400)
           .json({ error: "Value of endDate cannot be in the future" })
       } else if (err.message === "InvalidEndDateFormat") {
-        return res
-          .status(400)
-          .json({ error: "Invalid endDate format" })
+        return res.status(400).json({ error: "Invalid endDate format" })
       } else if (err.message === "EndDateBeforeStartDate") {
         return res
           .status(400)
-          .json({ error: "endDate cannot take place before startDate. Please insert an endDate posterior to startDate." })
+          .json({
+            error:
+              "endDate cannot take place before startDate. Please insert an endDate posterior to startDate.",
+          })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
