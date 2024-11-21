@@ -11,7 +11,7 @@ class GuidelineInputDTO {
   async toGuideline() {
     const guidelineOutbreak = await Outbreak.findOne({ co: this.outbreak })
     if (!guidelineOutbreak) {
-        throw new Error("OutbreakNotFound")
+      throw new Error("OutbreakNotFound")
     }
     return new Guideline({
       cg: this.cg,
