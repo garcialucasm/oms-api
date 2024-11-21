@@ -50,7 +50,7 @@ class CountryService {
 
     const country = await Country.findOne({ cc }).exec()
 
-    if (country.length === 0) {
+    if (!country) {
       const error = new Error()
       error.code = "NOT_FOUND"
       error.message = "Country Not Found"
