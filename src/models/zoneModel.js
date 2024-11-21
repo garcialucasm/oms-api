@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const ZoneSchema = new Schema(
   {
@@ -15,7 +15,7 @@ const ZoneSchema = new Schema(
     },
     name: String,
   },
-  { collection: "zones"}
-);
+  { collection: "zones" }
+)
 
-export default model("Zone", ZoneSchema);
+export default model("Zone", ZoneSchema)

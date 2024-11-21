@@ -28,7 +28,7 @@ class GuidelineService {
     return guideline
   }
   async listByStatus(isExpired) {
-    if(isExpired != "true" && isExpired != "false") {
+    if (isExpired != "true" && isExpired != "false") {
       throw new Error("InvalidStatus")
     }
     const guideline = await Guideline.findOne({
@@ -43,7 +43,7 @@ class GuidelineService {
   async editByCode(code, data) {
     const { cg, outbreak, validityPeriod } = data
 
-    if(!cg && !outbreak && !validityPeriod) {
+    if (!cg && !outbreak && !validityPeriod) {
       throw new Error("MissingFields")
     }
     const guideline = await Guideline.findOne({ cg: code })

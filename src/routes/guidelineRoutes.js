@@ -12,5 +12,4 @@ router.put("/:cg", guidelineController.updateGuidelineByCode)
 router.delete("/expired/:cg", guidelineController.deleteExpiredGuidelineByCode)
 router.delete("/:cg", guidelineController.deleteGuidelineByCode)
 
-
 export { router as guidelineRoutes }

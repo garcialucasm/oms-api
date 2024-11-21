@@ -33,13 +33,13 @@ class ZoneController {
     logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
-      res.status(200).json({message: "Zones found", data: zones})
+      res.status(200).json({ message: "Zones found", data: zones })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zones")
       if (err.message === "ZoneNotFound") {
         res.status(404).json({ error: "No zones found" })
       } else {
-        res.status(500).json({ error: "Error retrieving zones"})
+        res.status(500).json({ error: "Error retrieving zones" })
       }
     }
   }
@@ -48,13 +48,13 @@ class ZoneController {
     logger.info("GET:/api/zones by Name: " + req.params.name)
     try {
       const zone = await ZoneService.listByName(req.params.name)
-      res.status(200).json({message: "Zone found", data: zone})
+      res.status(200).json({ message: "Zone found", data: zone })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by name")
       if (err.message === "ZoneNotFound") {
         res.status(404).json({ error: "No zone found with the given name" })
       } else {
-        res.status(500).json({ error: "Error retrieving zones"})
+        res.status(500).json({ error: "Error retrieving zones" })
       }
     }
   }
@@ -63,13 +63,13 @@ class ZoneController {
     logger.info("GET:/api/zones by Code: " + req.params.cz)
     try {
       const zone = await ZoneService.listByCode(req.params.cz)
-      res.status(200).json({message: "Zone found", data: zone})
+      res.status(200).json({ message: "Zone found", data: zone })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by code")
       if (err.message === "ZoneNotFound") {
         res.status(404).json({ error: "No zone found with the given code" })
       } else {
-        res.status(500).json({ error: "Error retrieving zones"})
+        res.status(500).json({ error: "Error retrieving zones" })
       }
     }
   }
@@ -97,7 +97,7 @@ class ZoneController {
           error: "Duplicate zone code or zone name. Please use unique values.",
         })
       } else {
-        res.status(500).json({ error: "Error updating zone"})
+        res.status(500).json({ error: "Error updating zone" })
       }
     }
   }
@@ -114,7 +114,7 @@ class ZoneController {
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else {
-        res.status(500).json({ error: "Error deleting Zone"})
+        res.status(500).json({ error: "Error deleting Zone" })
       }
     }
   }
