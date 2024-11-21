@@ -10,6 +10,28 @@ class OutbreakService {
     if (!co || !cv || !cz || !startDate) {
       throw new Error("MissingRequiredFields")
     }
+    
+    const parsedStartDate = new Date(startDate)
+    const parsedEndDate = endDate ? new Date(endDate) : null
+
+    if (isNaN(parsedStartDate.getTime())) {
+      throw new Error("InvalidStartDateFormat")
+    }
+    if (parsedStartDate > Date.now()) {
+      throw new Error("FutureStartDate")
+    }
+
+    if (endDate && isNaN(parsedEndDate.getTime())) {
+      throw new Error("InvalidEndDateFormat")
+    }
+
+    if (parsedEndDate !== null) {
+      if (parsedEndDate < parsedStartDate) {
+        throw new Error("EndDateBeforeStartDate")
+      } else if (parsedEndDate > Date.now()) {
+        throw new Error("FutureEndDate")
+      }
+    }
 
     const outbreakVirus = await Virus.findOne({ cv: cv })
     if (!outbreakVirus) {
@@ -30,16 +52,13 @@ class OutbreakService {
       throw new Error("OutbreakAlreadyExists")
     }
 
-    //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
+    //Passar a condition a "occurred" caso o documento tenha endDate
     let condition
-    if (endDate !== null) {
+    if (endDate) {
       condition = "occurred"
     } else {
       condition = "active"
     }
-
-    const parsedStartDate = new Date(startDate)
-    const parsedEndDate = endDate ? new Date(endDate) : null
 
     const outbreakInputDTO = new OutbreakInputDTO(
       co,
@@ -72,6 +91,33 @@ class OutbreakService {
       throw new Error("OutbreakNotFound")
     }
 
+    const parsedEndDate = endDate ? new Date(endDate) : null
+
+    let parsedStartDate = null
+    if (startDate) {
+      parsedStartDate = new Date(startDate)
+
+      if (isNaN(parsedStartDate.getTime())) {
+        throw new Error("InvalidStartDateFormat")
+      }
+
+      if (parsedStartDate > Date.now()) {
+        throw new Error("FutureStartDate")
+      }
+    }
+
+    if (endDate && isNaN(parsedEndDate.getTime())) {
+      throw new Error("InvalidEndDateFormat")
+    }
+
+    if (parsedEndDate !== null) {
+      if (parsedEndDate < parsedStartDate) {
+        throw new Error("EndDateBeforeStartDate")
+      } else if (parsedEndDate > Date.now()) {
+        throw new Error("FutureEndDate")
+      }
+    }
+
     const virus = await Virus.findOne({ cv: cv })
     if (!virus && cv !== undefined) {
       throw new Error("VirusNotFound")
@@ -110,8 +156,8 @@ class OutbreakService {
     outbreak.co = co || outbreak.co
     outbreak.cv = virus?._id || outbreak.cv
     outbreak.cz = zone?._id || outbreak.cz
-    outbreak.startDate = startDate || outbreak.startDate
-    outbreak.endDate = endDate || outbreak.endDate
+    outbreak.startDate = parsedStartDate || outbreak.startDate
+    outbreak.endDate = parsedEndDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
@@ -143,6 +189,34 @@ class OutbreakService {
       throw new Error("OutbreakNotFound")
     }
 
+    //Validação das datas
+    const parsedEndDate = endDate ? new Date(endDate) : null
+
+    let parsedStartDate = null
+    if (startDate) {
+      parsedStartDate = new Date(startDate)
+
+      if (isNaN(parsedStartDate.getTime())) {
+        throw new Error("InvalidStartDateFormat")
+      }
+
+      if (parsedStartDate > Date.now()) {
+        throw new Error("FutureStartDate")
+      }
+    }
+
+    if (endDate && isNaN(parsedEndDate.getTime())) {
+      throw new Error("InvalidEndDateFormat")
+    }
+
+    if (parsedEndDate !== null) {
+      if (parsedEndDate < parsedStartDate) {
+        throw new Error("EndDateBeforeStartDate")
+      } else if (parsedEndDate > Date.now()) {
+        throw new Error("FutureEndDate")
+      }
+    }
+
     //Validar dados do update
     const virus = await Virus.findOne({ cv: cv })
     if (!virus && cv !== undefined) {
@@ -171,9 +245,9 @@ class OutbreakService {
 
     //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
     let updatedCondition
-    if (outbreak.endDate !== null) {
+    if (outbreak.endDate) {
       updatedCondition = "occurred"
-    } else if (endDate !== null) {
+    } else if (endDate) {
       updatedCondition = "occurred"
     } else {
       updatedCondition = "active"
@@ -182,8 +256,8 @@ class OutbreakService {
     outbreak.co = co || outbreak.co
     outbreak.cv = virus?._id || outbreak.cv
     outbreak.cz = zone?._id || outbreak.cz
-    outbreak.startDate = startDate || outbreak.startDate
-    outbreak.endDate = endDate || outbreak.endDate
+    outbreak.startDate = parsedStartDate || outbreak.startDate
+    outbreak.endDate = parsedEndDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
