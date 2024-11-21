@@ -3,6 +3,7 @@ import request from "supertest"
 import mongoose from "mongoose"
 
 import { app, server } from "../src/app.js"
+import logger from "../src/logger.js"
 
 dotenv.config()
 
@@ -31,6 +32,27 @@ describe("Country API Tests", () => {
       expect(response.status).toBe(201)
       expect(response.body.data.cc).toBe("PT")
       expect(response.body.data.name).toBe("Portugal")
+    })
+
+    it("should not create an already existing country", async () => {
+      const newCountry = { cc: "ES", name: "Spain" }
+
+      const firstResponse = await request(app)
+        .post("/api/countries")
+        .send(newCountry)
+
+      expect(firstResponse.status).toBe(201)
+      expect(firstResponse.body.data.cc).toBe("ES")
+      expect(firstResponse.body.data.name).toBe("Spain")
+
+      const secondResponse = await request(app)
+        .post("/api/countries")
+        .send(newCountry)
+
+      expect(secondResponse.status).toBe(400)
+      expect(secondResponse.body.message).toBe(
+        "Duplicate country code or country name. Please use unique values."
+      )
     })
 
     it("should return validation error for missing name field", async () => {
