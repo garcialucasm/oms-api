@@ -7,28 +7,28 @@ class ZoneService {
     return zone
   }
   async list() {
-    const zones = await Zone.find()
+    const zones = await Zone.find().populate("countries")
     if (!zones) {
       throw new Error("ZoneNotFound")
     }
     return zones
   }
   async listByName(name) {
-    const zone = await Zone.findOne({ name: name })
+    const zone = await Zone.findOne({ name: name }).populate("countries")
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
     return zone
   }
   async listByCode(cz) {
-    const zone = await Zone.findOne({ cz: cz })
+    const zone = await Zone.findOne({ cz: cz }).populate("countries")
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
     return zone
   }
   async editByCode(cz, data) {
-    const zone = await Zone.findOne({ cz: cz })
+    const zone = await Zone.findOne({ cz: cz }).populate("countries")
     if (!zone) {
       throw new Error("ZoneNotFound")
     }

@@ -16,7 +16,7 @@ const VirusSchema = new Schema(
       unique: true,
     },
   },
-  { collection: "viruses" }
+  { collection: "viruses", timestamps: true }
 )
 
 export default model("Virus", VirusSchema)
