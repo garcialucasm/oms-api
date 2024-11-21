@@ -6,6 +6,8 @@ import { virusRoutes } from "./routes/virusRoutes.js"
 import { outbreakRoutes } from "./routes/outbreakRoutes.js"
 import { zoneRoutes } from "./routes/zoneRoutes.js"
 import { countryRoutes } from "./routes/countryRoutes.js"
+import { guidelineRoutes } from "./routes/guidelineRoutes.js"
+import GuidelineService from "./services/guidelineService.js"
 import logger from "./logger.js"
 
 const mongoConnectionString = process.env.DB_CONNECTION_STRING
@@ -28,5 +30,19 @@ app.use("/api/viruses", virusRoutes)
 app.use("/api/zones", zoneRoutes)
 app.use("/api/countries", countryRoutes)
 app.use("/api/outbreaks", outbreakRoutes)
+app.use("/api/guidelines", guidelineRoutes)
 
+GuidelineService.updateValidity(mongoConnectionString)
+
+const timeUntilMidnight = () => {
+  const now = new Date()
+  const nextMidnight = new Date(now)
+  nextMidnight.setHours(24, 0, 0, 0) 
+  return nextMidnight - now 
+}
+
+setTimeout(() => {
+  GuidelineService.updateValidity() 
+  setInterval(() => { GuidelineService.updateValidity()}, 24 * 60 * 60 * 1000) 
+}, timeUntilMidnight())
 export { app, server }

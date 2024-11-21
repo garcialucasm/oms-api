@@ -3,9 +3,7 @@ import CountryService from "../services/countryService.js"
 
 class CountryController {
   async create(req, res) {
-    logger.info("POST: /api/countries - Request body: ", {
-      body: JSON.stringify(req.body),
-    })
+    logger.info("POST: /api/countries")
     try {
       await CountryService.save(req.body)
       res.status(201).json({
@@ -14,6 +12,10 @@ class CountryController {
         data: req.body,
       })
     } catch (err) {
+      logger.error(
+        "CountryController - Error creating country - ",
+        err
+      )
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -111,9 +113,7 @@ class CountryController {
 
   async update(req, res) {
     const { cc } = req.params
-    logger.info(`PUT: /api/countries/${cc} - Request body: `, {
-      body: JSON.stringify(req.body),
-    })
+    logger.info(`PUT: /api/countries/${cc}`)
 
     try {
       const updatedCountry = await CountryService.update(cc, req.body)

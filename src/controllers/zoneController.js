@@ -3,14 +3,16 @@ import logger from "../logger.js"
 
 class ZoneController {
   async createZone(req, res) {
-    logger.info("POST: /api/zones - ", {
-      body: JSON.stringify(req.body),
-    })
+    logger.info("POST: /api/zones")
     try {
       const { cz, name } = req.body
-      await ZoneService.save({ cz, name })
-      return res.status(201).json("Zone created")
+      const zone = await ZoneService.save({ cz, name })
+      res.status(201).json({
+        message: "Zone created successfully",
+        data: zone,
+      })
     } catch (err) {
+      logger.error("ZoneController - Error creating zone")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -22,9 +24,7 @@ class ZoneController {
           error: "Duplicate zone code or zone name. Please use unique values.",
         })
       } else {
-        res
-          .status(500)
-          .json({ error: "Error saving zone", details: err.message })
+        res.status(500).json({ error: "Error saving zone" })
       }
     }
   }
@@ -33,9 +33,14 @@ class ZoneController {
     logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
-      return res.status(200).json(zones)
+      res.status(200).json({ message: "Zones found", data: zones })
     } catch (err) {
-      res.status(500).json({ Error: "Error retrieving zones", details: err })
+      logger.error("ZoneController - Failed to retrieve zones")
+      if (err.message === "ZoneNotFound") {
+        res.status(404).json({ error: "No zones found" })
+      } else {
+        res.status(500).json({ error: "Error retrieving zones" })
+      }
     }
   }
 
@@ -43,12 +48,14 @@ class ZoneController {
     logger.info("GET:/api/zones by Name: " + req.params.name)
     try {
       const zone = await ZoneService.listByName(req.params.name)
-      if (!zone) {
-        return res.status(404).json({ message: "Zone not found" })
-      }
-      return res.status(200).json(zone)
+      res.status(200).json({ message: "Zone found", data: zone })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving zone", details: err })
+      logger.error("ZoneController - Failed to retrieve zone by name")
+      if (err.message === "ZoneNotFound") {
+        res.status(404).json({ error: "No zone found with the given name" })
+      } else {
+        res.status(500).json({ error: "Error retrieving zones" })
+      }
     }
   }
 
@@ -56,31 +63,32 @@ class ZoneController {
     logger.info("GET:/api/zones by Code: " + req.params.cz)
     try {
       const zone = await ZoneService.listByCode(req.params.cz)
-      if (!zone) {
-        return res.status(404).json({ message: "Zone not found" })
-      }
-      return res.status(200).json(zone)
+      res.status(200).json({ message: "Zone found", data: zone })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving zone", details: err })
+      logger.error("ZoneController - Failed to retrieve zone by code")
+      if (err.message === "ZoneNotFound") {
+        res.status(404).json({ error: "No zone found with the given code" })
+      } else {
+        res.status(500).json({ error: "Error retrieving zones" })
+      }
     }
   }
 
   async updateZoneByCode(req, res) {
-    logger.info("PUT:/api/zones: " + req.params.cz + " - ", {
-      body: JSON.stringify(req.body),
-    })
+    logger.info("PUT:/api/zones: " + req.params.cz)
     try {
       const { cz, name } = req.body
       const zone = await ZoneService.editByCode(req.params.cz, { cz, name })
-      return res.status(201).json({ message: "Zone updated: ", zone })
+      res.status(201).json({ message: "Zone updated", data: zone })
     } catch (err) {
+      logger.error("ZoneController - Error updating zone")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error:"
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message}`
         }
         res.status(400).json({ error: errorMessage.trim() })
-      } else if (err.statusCode === 400) {
+      } else if (err.message === "ZoneNotFound") {
         res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
@@ -89,23 +97,24 @@ class ZoneController {
           error: "Duplicate zone code or zone name. Please use unique values.",
         })
       } else {
-        res.status(500).json({ error: "Error updating zone", details: err })
+        res.status(500).json({ error: "Error updating zone" })
       }
     }
   }
 
   async deleteZoneByCode(req, res) {
-    logger.info(`DELETE:/api/zones: ${req.params.cz}`)
+    logger.info("DELETE:/api/zones: " + req.params.cz)
     try {
       await ZoneService.removeByCode(req.params.cz)
-      return res.status(200).json({ message: "deleted" })
+      res.status(200).json({ message: "Zone deleted", data: req.params.cz })
     } catch (err) {
-      if (err.statusCode === 400) {
+      logger.error("ZoneController - Error deleting zone")
+      if (err.message === "ZoneNotFound") {
         res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else {
-        res.status(500).json({ error: `Error deleting Zone`, details: err })
+        res.status(500).json({ error: "Error deleting Zone" })
       }
     }
   }
