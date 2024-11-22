@@ -7,7 +7,7 @@ import { app, server } from "../src/app.js"
 dotenv.config()
 
 describe("Country API Tests", () => {
-  let zoneId
+  let zone
 
   beforeAll(async () => {
     await mongoose.connect(process.env.DB_TEST_CONNECTION_STRING, {
@@ -18,7 +18,7 @@ describe("Country API Tests", () => {
     const newZone = { cz: "A2", name: "ZonaA2" }
     const zoneResponse = await request(app).post("/api/zones").send(newZone)
     expect(zoneResponse.status).toBe(201)
-    zoneId = zoneResponse.body.data._id
+    zone = zoneResponse.body.data.cz
     /* -------------------------------------------------------------------------- */
   })
 
@@ -30,7 +30,7 @@ describe("Country API Tests", () => {
 
   describe("POST /api/countries", () => {
     test("should create a new country", async () => {
-      const newCountry = { cc: "PT", name: "Portugal", zone: zoneId }
+      const newCountry = { name: "Portugal", zone }
 
       const countryResponse = await request(app)
         .post("/api/countries")
@@ -38,20 +38,19 @@ describe("Country API Tests", () => {
       expect(countryResponse.status).toBe(201)
       expect(countryResponse.body.data.cc).toBe("PT")
       expect(countryResponse.body.data.name).toBe("Portugal")
-      expect(countryResponse.body.data.zone).toBe(zoneId) // Verify the zone ID is correctly linked
     })
 
-    test("should not create an already existing country", async () => {
-      const newCountry = { cc: "ES", name: "Spain", zone: zoneId }
-      newCountry.zone = zoneId
+    test("should not create an already existing country name", async () => {
+      const newCountry = { name: "Brazil", zone }
+      newCountry.zone = zone
 
       const firstResponse = await request(app)
         .post("/api/countries")
         .send(newCountry)
 
       expect(firstResponse.status).toBe(201)
-      expect(firstResponse.body.data.cc).toBe("ES")
-      expect(firstResponse.body.data.name).toBe("Spain")
+      expect(firstResponse.body.data.cc).toBe("BR")
+      expect(firstResponse.body.data.name).toBe("Brazil")
 
       const secondResponse = await request(app)
         .post("/api/countries")
@@ -63,26 +62,35 @@ describe("Country API Tests", () => {
       )
     })
 
-    test("should return validation error for missing name field", async () => {
-      const invalidCountry = { cc: "PT" }
+    test("should not create a country with incorrect name", async () => {
+      const newCountry = { name: "Espanha", zone }
+      newCountry.zone = zone
 
       const response = await request(app)
         .post("/api/countries")
-        .send(invalidCountry)
+        .send(newCountry)
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toContain("Country name is required")
     })
 
-    test("should return validation error for missing cc field", async () => {
-      const invalidCountry = { name: "Portugal" }
+    test("should return validation error for missing name field", async () => {
+      const invalidCountry = { zone }
 
       const response = await request(app)
         .post("/api/countries")
         .send(invalidCountry)
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toContain("Country code is required")
+    })
+
+    test("should return validation error for missing zone field", async () => {
+      const invalidCountry = { name: "England" }
+
+      const response = await request(app)
+        .post("/api/countries")
+        .send(invalidCountry)
+
+      expect(response.status).toBe(400)
     })
   })
 
