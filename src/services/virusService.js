@@ -28,12 +28,20 @@ class VirusService {
     return virus
   }
 
-  async update(cv, data) {
-    const virus = await Virus.findOne({ cv: cv })
+  async update(code, data) {
+    const {cv, name} = data
+    if(!cv && !name) {
+      throw new Error("MissingFields")
+    }
+
+    const virus = await Virus.findOne({ cv: code })
     if (!virus) {
       throw new Error("VirusNotFound")
     }
-    Object.assign(virus, data)
+
+    virus.cv = cv || virus.cv
+    virus.name = name || virus.name
+
     await virus.save()
     return virus
   }

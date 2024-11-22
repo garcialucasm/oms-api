@@ -83,7 +83,7 @@ class VirusController {
     logger.info("PUT:/api/viruses: " + req.params.cv)
     try {
       const virus = await VirusService.update(req.params.cv, req.body)
-      res.status(200).json({ message: "Virus updated!", virus })
+      res.status(200).json({ message: "Virus updated!", data: virus })
     } catch (err) {
       logger.error("VirusController - Error updating virus")
       if (err.name === "ValidationError") {
@@ -92,6 +92,8 @@ class VirusController {
           errorMessage += `${err.errors[field].message} `
         }
         res.status(400).json({ error: errorMessage.trim() })
+      } else if (err.message === "MissingFields") {
+        res.status(400).json({ error: "Missing required fields" })
       } else if (err.message === "VirusNotFound") {
         res
           .status(400)
