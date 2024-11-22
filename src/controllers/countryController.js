@@ -99,9 +99,10 @@ class CountryController {
     const { name: countryName } = req.params
     logger.info(`GET: /api/countries/name/${countryName}`)
     try {
-      const country = await CountryService.list({
+      const countryFound = await CountryService.list({
         name: countryName,
       })
+      const country = CountryOutputDTO.fromCountry(countryFound)
       res.status(200).json({
         message: MESSAGES.COUNTRY_RETRIEVED_BY_NAME,
         data: country,
