@@ -24,14 +24,19 @@ class CountryController {
             "Duplicate country code or country name. Please use unique values.",
           error: err,
         })
-      } else if ((err.message = "ZoneNotFound")) {
+      } else if (err.message === "InvalidCountryName") {
+        res.status(400).json({
+          error:
+            "Country not found with the given country name. Please enter the country name in English.",
+        })
+      } else if (err.message === "ZoneNotFound") {
         res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else {
         res.status(500).json({
           message: "Failed to create country",
-          error: err,
+          error: err.message,
         })
       }
     }
@@ -71,7 +76,7 @@ class CountryController {
         "CountryController - Error retrieving country by code - ",
         err
       )
-      res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
+      res.status(err.message === "CountryNotFound" ? 404 : 500).json({
         message: "Failed to retrieve country by code",
         error: err,
       })
@@ -94,7 +99,7 @@ class CountryController {
         "CountryController - Error retrieving country by name - ",
         err
       )
-      res.status(err.status || 500).json({
+      res.status(500).json({
         message: "Failed to retrieve country by name",
         error: err,
       })
@@ -112,15 +117,15 @@ class CountryController {
         data: updatedCountry,
       })
     } catch (err) {
-      if ((err.message = "CountryNotFound")) {
+      if (err.message === "CountryNotFound") {
         res.status(404).json({ error: "Country not found" })
-      } else if ((err.message = "ZoneNotFound")) {
+      } else if (err.message === "ZoneNotFound") {
         res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
       } else {
         logger.error("CountryController - Error updating country - ", err)
-        res.status(err.status || 500).json({
+        res.status(500).json({
           message: "Failed to update country",
           error: err,
         })
@@ -139,7 +144,7 @@ class CountryController {
       })
     } catch (err) {
       logger.error("CountryController - Error deleting country - ", err)
-      res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
+      res.status(err.message === "CountryNotFound" ? 404 : 500).json({
         message: "Failed to delete country",
         error: err,
       })
