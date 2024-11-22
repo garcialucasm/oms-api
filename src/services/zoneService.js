@@ -47,7 +47,6 @@ class ZoneService {
       throw new Error("CountryAssociated")
     }
     const outbreak = await Outbreak.findOne({zone: zone._id})
-    console.log("🚀 ~ ZoneService ~ removeByCode ~ outbreak:", outbreak)
 
     if(outbreak) {
       throw new Error("OutbreakAssociated")
