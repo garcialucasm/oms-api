@@ -1,4 +1,5 @@
 import Virus from "../models/virusModel.js"
+import Outbreak from "../models/outbreakModel.js"
 
 class VirusService {
   async create(data) {
@@ -12,19 +13,25 @@ class VirusService {
   }
 
   async getAll() {
-    return await Virus.find().exec()
+    const viruses = await Virus.find().exec()
+    if(!viruses) {
+      throw new Error("VirusNotFound")
+    }
+    return viruses
   }
 
   async list(data) {
-    return await Virus.findOne(data).exec()
+    const virus = await Virus.findOne(data).exec()
+    if(!virus) {
+      throw new Error("VirusNotFound")
+    }
+    return virus
   }
 
   async update(cv, data) {
     const virus = await Virus.findOne({ cv: cv })
     if (!virus) {
-      const error = new Error()
-      error.name = "VirusNotFound"
-      throw error
+      throw new Error("VirusNotFound")
     }
     Object.assign(virus, data)
     await virus.save()
@@ -34,9 +41,12 @@ class VirusService {
   async delete(cv) {
     const virus = await Virus.findOne({ cv: cv }).exec()
     if (!virus) {
-      const error = new Error()
-      error.name = "VirusNotFound"
-      throw error
+      throw new Error("VirusNotFound")
+    }
+    const outbreak = await Outbreak.findOne({virus: virus._id})
+
+    if(outbreak) {
+      throw new Error("OutbreakAssociated")
     }
     await virus.deleteOne()
   }
