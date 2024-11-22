@@ -1,8 +1,9 @@
+import mongoose from "mongoose"
 import dotenv from "dotenv"
 import request from "supertest"
-import mongoose from "mongoose"
 
 import { app, server } from "../src/app.js"
+import { MESSAGES } from "../src/utils/responseMessages.js"
 
 dotenv.config()
 
@@ -37,43 +38,34 @@ describe("Country API Tests", () => {
         .send(newCountry)
       expect(countryResponse.status).toBe(201)
       expect(countryResponse.body.data.cc).toBe("PT")
-      expect(countryResponse.body.data.name).toBe("Portugal")
+      expect(countryResponse.body.data.name).toBe("PORTUGAL")
     })
 
     test("should not create an already existing country name", async () => {
       const newCountry = { name: "Brazil", zone }
-      newCountry.zone = zone
 
       const firstResponse = await request(app)
         .post("/api/countries")
         .send(newCountry)
-
       expect(firstResponse.status).toBe(201)
       expect(firstResponse.body.data.cc).toBe("BR")
-      expect(firstResponse.body.data.name).toBe("Brazil")
+      expect(firstResponse.body.data.name).toBe("BRAZIL")
 
       const secondResponse = await request(app)
         .post("/api/countries")
         .send(newCountry)
-
       expect(secondResponse.status).toBe(400)
-      expect(secondResponse.body.message).toBe(
-        "Duplicate country code or country name. Please use unique values."
-      )
+      expect(secondResponse.body.message).toBe(MESSAGES.DUPLICATE_COUNTRY)
     })
 
     test("should not create a country with incorrect name", async () => {
       const newCountry = { name: "Espanha", zone }
-      newCountry.zone = zone
 
       const response = await request(app)
         .post("/api/countries")
         .send(newCountry)
-
       expect(response.status).toBe(400)
-      expect(response.body.error).toBe(
-        "Country not found with the given country name. Please enter the country name in English."
-      )
+      expect(response.body.error).toBe(MESSAGES.INVALID_COUNTRY_NAME)
     })
 
     test("should return validation error for missing name field", async () => {
@@ -82,11 +74,8 @@ describe("Country API Tests", () => {
       const response = await request(app)
         .post("/api/countries")
         .send(invalidCountry)
-
       expect(response.status).toBe(400)
-      expect(response.body.error).toBe(
-        "Country not found with the given country name. Please enter the country name in English."
-      )
+      expect(response.body.error).toBe(MESSAGES.INVALID_COUNTRY_NAME)
     })
 
     test("should return validation error for missing zone field", async () => {
@@ -95,11 +84,8 @@ describe("Country API Tests", () => {
       const response = await request(app)
         .post("/api/countries")
         .send(invalidCountry)
-
       expect(response.status).toBe(400)
-      expect(response.body.error).toBe(
-        "Zone not found with the given zone code."
-      )
+      expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND)
     })
   })
 
@@ -124,7 +110,7 @@ describe("Country API Tests", () => {
       const response = await request(app).get("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
-      expect(response.body.error).toBe("Country not found.")
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
     })
   })
 
@@ -133,14 +119,14 @@ describe("Country API Tests", () => {
       const response = await request(app).delete("/api/countries/cc/PT")
 
       expect(response.status).toBe(200)
-      expect(response.body.message).toContain("Country deleted successfully")
+      expect(response.body.message).toBe(MESSAGES.COUNTRY_DELETED)
     })
 
     test("should return 404 if the country is not found for deletion", async () => {
       const response = await request(app).delete("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
-      expect(response.body.error).toBe("Country not found.")
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
     })
   })
 })
