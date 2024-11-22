@@ -1,6 +1,7 @@
 import Outbreak from "../models/outbreakModel.js"
 import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
+import Guideline from "../models/guidelineModel.js"
 import OutbreakInputDTO from "../DTO/outbreakInputDTO.js"
 
 class OutbreakService {
@@ -76,21 +77,69 @@ class OutbreakService {
   }
 
   async getAll() {
-    return await Outbreak.find().populate("virus").populate("zone").exec()
+    const outbreaks = await Outbreak.find()
+      .populate("virus")
+      .populate("zone")
+      .exec()
+    if (outbreaks.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreaks
   }
 
-  async list(data) {
-    return await Outbreak.find(data).populate("virus").populate("zone").exec()
+  async listByOutbreak(data) {
+    const outbreak = await Outbreak.find(data)
+      .populate("virus")
+      .populate("zone")
+      .exec()
+    if (!outbreak || outbreak.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreak
+  }
+
+  async listByVirus(data) {
+    const virus = await Virus.findOne(data)
+    if (!virus) {
+      throw new Error("VirusNotFound")
+    }
+    const outbreak = await Outbreak.find({ virus: virus._id })
+      .populate("virus")
+      .populate("zone")
+      .exec()
+    if (!outbreak || outbreak.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreak
+  }
+
+  async listByZone(data) {
+    const zone = await Zone.findOne(data)
+    if (!zone) {
+      throw new Error("ZoneNotFound")
+    }
+    const outbreak = await Outbreak.find({ zone: zone._id })
+      .populate("virus")
+      .populate("zone")
+      .exec()
+    if (!outbreak || outbreak.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreak
   }
 
   async listActOcc(data) {
     if (data !== "active" && data !== "occurred") {
       throw new Error("InvalidParameters")
     }
-    return await Outbreak.find({ condition: data })
+    const outbreak = await Outbreak.find({ condition: data })
       .populate("virus")
       .populate("zone")
       .exec()
+    if (!outbreak || outbreak.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreak
   }
 
   async update(code, data) {
@@ -140,8 +189,10 @@ class OutbreakService {
 
     //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
     if (
-      (virus !== undefined && virusDB?._id?.toString() !== outbreak.virus.toString()) ||
-      (zone !== undefined && zoneDB?._id?.toString() !== outbreak.zone.toString())
+      (virus !== undefined &&
+        virusDB?._id?.toString() !== outbreak.virus.toString()) ||
+      (zone !== undefined &&
+        zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
         virus: virus !== undefined ? virusDB?._id : outbreak.virus,
@@ -240,8 +291,10 @@ class OutbreakService {
 
     //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
     if (
-      (virus !== undefined && virusDB?._id?.toString() !== outbreak.virus.toString()) ||
-      (zone !== undefined && zoneDB?._id?.toString() !== outbreak.zone.toString())
+      (virus !== undefined &&
+        virusDB?._id?.toString() !== outbreak.virus.toString()) ||
+      (zone !== undefined &&
+        zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
         virus: virus !== undefined ? virusDB?._id : outbreak.virus,
@@ -280,9 +333,11 @@ class OutbreakService {
   async delete(co) {
     const outbreak = await Outbreak.findOne({ co: co }).exec()
     if (!outbreak) {
-      const error = new Error()
-      error.name = "OutbreakNotFound"
-      throw error
+      throw new Error("OutbreakNotFound")
+    }
+    const guideline = await Guideline.findOne({ outbreak: outbreak._id })
+    if (guideline) {
+      throw new Error("GuidelineAssociated")
     }
     await outbreak.deleteOne()
   }

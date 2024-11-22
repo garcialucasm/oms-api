@@ -14,7 +14,7 @@ class VirusService {
 
   async getAll() {
     const viruses = await Virus.find().exec()
-    if(!viruses) {
+    if (viruses.length === 0) {
       throw new Error("VirusNotFound")
     }
     return viruses
@@ -22,15 +22,15 @@ class VirusService {
 
   async list(data) {
     const virus = await Virus.findOne(data).exec()
-    if(!virus) {
+    if (!virus) {
       throw new Error("VirusNotFound")
     }
     return virus
   }
 
   async update(code, data) {
-    const {cv, name} = data
-    if(!cv && !name) {
+    const { cv, name } = data
+    if (!cv && !name) {
       throw new Error("MissingFields")
     }
 
@@ -51,9 +51,9 @@ class VirusService {
     if (!virus) {
       throw new Error("VirusNotFound")
     }
-    const outbreak = await Outbreak.findOne({virus: virus._id})
+    const outbreak = await Outbreak.findOne({ virus: virus._id })
 
-    if(outbreak) {
+    if (outbreak) {
       throw new Error("OutbreakAssociated")
     }
     await virus.deleteOne()

@@ -2,9 +2,11 @@ import OutbreakService from "../services/outbreakService.js"
 import Outbreak from "../models/outbreakModel.js"
 import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
+import logger from "../logger.js"
 
 class OutbreakController {
   async create(req, res) {
+    logger.info("POST: /api/outbreaks")
     try {
       const { co, virus, zone, startDate, endDate } = req.body
 
@@ -18,7 +20,7 @@ class OutbreakController {
 
       res.status(201).json({ message: "New Outbreak created!", data: outbreak })
     } catch (err) {
-      console.error("Error in createOutbreak:", err)
+      logger.error("OutbreakController - Error creating outbreak")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -69,80 +71,99 @@ class OutbreakController {
   }
 
   async getAll(req, res) {
+    logger.info("GET:/api/outbreaks")
     try {
       const outbreaks = await OutbreakService.getAll()
-      if (!outbreaks) {
-        res.status(404).json({ error: "No outbreaks not found" })
-      }
       res.status(200).json({ message: "Outbreaks found!", data: outbreaks })
     } catch (err) {
-      res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err })
+      logger.error("OutbreakController - Error retrieving outbreaks")
+      if (err.message === "OutbreakNotFound") {
+        res.status(404).json({ error: "No outbreaks found" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving outbreaks", details: err })
+      }
     }
   }
 
   async getByCode(req, res) {
+    logger.info("GET:/api/oubreaks by Code: " + req.params.co)
     try {
-      const outbreak = await OutbreakService.list({ co: req.params.co })
-      if (!outbreak || outbreak.length === 0) {
-        res.status(404).json({ error: "Outbreak not found" })
-      }
+      const outbreak = await OutbreakService.listByOutbreak({
+        co: req.params.co,
+      })
       res.status(200).json({ message: "Outbreak found!", data: outbreak })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving outbreak", details: err })
+      logger.error("OutbreakController - Error retrieving outbreak")
+      if (err.message === "OutbreakNotFound") {
+        res.status(404).json({ error: "No outbreak found with the given code" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving outbreaks", details: err })
+      }
     }
   }
 
   async getByVirusCode(req, res) {
+    logger.info("GET:/api/oubreaks by Virus Code: " + req.params.cv)
     try {
-      const virus = await Virus.findOne({ cv: req.params.cv })
-      if (!virus) {
-        res.status(404).json({ error: "Virus not found" })
-      }
-
-      const outbreak = await OutbreakService.list({ virus: virus._id })
-      if (!outbreak || outbreak.length === 0) {
-        res.status(404).json({ error: "Outbreaks not found" })
-      }
+      const outbreak = await OutbreakService.listByVirus({ cv: req.params.cv })
       res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
-      res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err })
+      logger.error("OutbreakController - Error retrieving outbreak")
+      if (err.message === "VirusNotFound") {
+        res.status(400).json({ error: "No virus matches the given code" })
+      } else if (err.message === "OutbreakNotFound") {
+        res
+          .status(404)
+          .json({ error: "No outbreak found with the given virus code" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving outbreaks", details: err })
+      }
     }
   }
 
   async getByZoneCode(req, res) {
+    logger.info("GET:/api/oubreaks by Zone Code: " + req.params.cz)
     try {
-      const zone = await Zone.findOne({ cz: req.params.cz })
-      if (!zone) {
-        res.status(404).json({ error: "Zone not found" })
-      }
-      const outbreak = await OutbreakService.list({ zone: zone._id })
-      if (!outbreak || outbreak.length === 0) {
-        res.status(404).json({ error: "Outbreaks not found" })
-      }
+      const outbreak = await OutbreakService.listByZone({ cz: req.params.cz })
       res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
+      logger.error("OutbreakController - Error retrieving outbreak")
       res
-        .status(500)
-        .json({ error: "Error retrieving outbreaks", details: err })
+      if (err.message === "ZoneNotFound") {
+        res.status(400).json({ error: "No zone matches the given code" })
+      } else if (err.message === "OutbreakNotFound") {
+        res
+          .status(404)
+          .json({ error: "No outbreak found with the given zone code" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving outbreaks", details: err })
+      }
     }
   }
 
   async getAllByCondition(req, res) {
+    logger.info("GET:/api/oubreaks by Condition: " + req.params.condition)
     try {
       const outbreak = await OutbreakService.listActOcc(req.params.condition)
-      if (!outbreak || outbreak.length === 0) {
-        res.status(404).json({ error: "Outbreaks not found" })
-      }
       res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
-      if ((err.message = "InvalidParameters")) {
+      logger.error("OutbreakController - Error retrieving outbreaks")
+      if (err.message === "InvalidParameters") {
         res
           .status(404)
           .json({ error: "Invalid search parameter. Try active or occurred." })
+      } else if (err.message === "OutbreakNotFound") {
+        res
+          .status(404)
+          .json({ error: "No outbreak found with the given condition" })
       } else {
         res
           .status(500)
@@ -152,6 +173,7 @@ class OutbreakController {
   }
 
   async update(req, res) {
+    logger.info("PUT:/api/outbreaks: " + req.params.co)
     try {
       const { co, virus, zone, startDate, endDate } = req.body
 
@@ -164,6 +186,7 @@ class OutbreakController {
       })
       res.status(200).json({ message: "Outbreak updated!", data: outbreak })
     } catch (err) {
+      logger.error("OutbreakController - Error updating outbreak")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -216,6 +239,7 @@ class OutbreakController {
   }
 
   async updateByZoneCodeVirusCode(req, res) {
+    logger.info("PUT:/api/outbreaks: " + req.params.cz + " - " + req.params.cv)
     try {
       const { co, virus, zone, startDate, endDate } = req.body
 
@@ -232,6 +256,7 @@ class OutbreakController {
       )
       res.status(200).json({ message: "Outbreak updated!", data: outbreak })
     } catch (err) {
+      logger.error("OutbreakController - Error updating outbreak")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -285,14 +310,23 @@ class OutbreakController {
   }
 
   async delete(req, res) {
+    logger.info("DELETE:/api/outbreaks: " + req.params.co)
     try {
       await OutbreakService.delete(req.params.co)
       res.status(200).json({ message: "Outbreak deleted!" })
     } catch (err) {
-      if (err.name === "OutbreakNotFound") {
+      logger.error("OutbreakController - Error deleting outbreak")
+      if (err.message === "OutbreakNotFound") {
         res
           .status(400)
           .json({ error: "Outbreak not found with the given code" })
+      } else if (err.message === "GuidelineAssociated") {
+        res
+          .status(400)
+          .json({
+            error:
+              "Cannot delete outbreak because it has guidelines associated",
+          })
       } else {
         res
           .status(500)
