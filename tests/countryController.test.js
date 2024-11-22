@@ -71,6 +71,9 @@ describe("Country API Tests", () => {
         .send(newCountry)
 
       expect(response.status).toBe(400)
+      expect(response.body.error).toBe(
+        "Country not found with the given country name. Please enter the country name in English."
+      )
     })
 
     test("should return validation error for missing name field", async () => {
@@ -81,6 +84,9 @@ describe("Country API Tests", () => {
         .send(invalidCountry)
 
       expect(response.status).toBe(400)
+      expect(response.body.error).toBe(
+        "Country not found with the given country name. Please enter the country name in English."
+      )
     })
 
     test("should return validation error for missing zone field", async () => {
@@ -91,6 +97,9 @@ describe("Country API Tests", () => {
         .send(invalidCountry)
 
       expect(response.status).toBe(400)
+      expect(response.body.error).toBe(
+        "Zone not found with the given zone code."
+      )
     })
   })
 
@@ -115,6 +124,7 @@ describe("Country API Tests", () => {
       const response = await request(app).get("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
+      expect(response.body.error).toBe("Country not found.")
     })
   })
 
@@ -130,6 +140,7 @@ describe("Country API Tests", () => {
       const response = await request(app).delete("/api/countries/cc/ZZ")
 
       expect(response.status).toBe(404)
+      expect(response.body.error).toBe("Country not found.")
     })
   })
 })

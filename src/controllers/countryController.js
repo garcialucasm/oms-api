@@ -32,7 +32,7 @@ class CountryController {
       } else if (err.message === "ZoneNotFound") {
         res
           .status(400)
-          .json({ error: "Zone not found with the given zone code" })
+          .json({ error: "Zone not found with the given zone code." })
       } else {
         res.status(500).json({
           message: "Failed to create country",
@@ -76,10 +76,13 @@ class CountryController {
         "CountryController - Error retrieving country by code - ",
         err
       )
-      res.status(err.message === "CountryNotFound" ? 404 : 500).json({
-        message: "Failed to retrieve country by code",
-        error: err,
-      })
+      if (err.message === "CountryNotFound") {
+        res.status(404).json({ error: "Country not found." })
+      } else
+        res.status(500).json({
+          message: "Failed to retrieve country by code",
+          error: err,
+        })
     }
   }
 
@@ -144,10 +147,13 @@ class CountryController {
       })
     } catch (err) {
       logger.error("CountryController - Error deleting country - ", err)
-      res.status(err.message === "CountryNotFound" ? 404 : 500).json({
-        message: "Failed to delete country",
-        error: err,
-      })
+      if (err.message === "CountryNotFound") {
+        res.status(404).json({ error: "Country not found." })
+      } else
+        res.status(500).json({
+          message: "Failed to delete country",
+          error: err,
+        })
     }
   }
 }
