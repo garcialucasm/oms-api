@@ -139,7 +139,7 @@ class OutbreakController {
       }
       res.status(200).json({ message: "Outbreaks found!", data: outbreak })
     } catch (err) {
-      if ((err.message = "InvalidParameters")) {
+      if ((err.message === "InvalidParameters")) {
         res
           .status(404)
           .json({ error: "Invalid search parameter. Try active or occurred." })
