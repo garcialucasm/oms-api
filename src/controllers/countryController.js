@@ -125,13 +125,12 @@ class CountryController {
 
     try {
       const { name, zone } = req.body
-      const countryInputDTO = new CountryInputDTO(name, zone)
-      const country = await countryInputDTO.toCountry()
-      const updatedCountry = await CountryService.update(country)
+      const updatedCountry = await CountryService.update(cc, name, zone)
+      const updatedCountryDTO = CountryOutputDTO.fromCountry([updatedCountry])
 
       res.status(200).json({
         message: MESSAGES.COUNTRY_UPDATED,
-        data: updatedCountry,
+        data: updatedCountryDTO,
       })
     } catch (err) {
       if (err.message === "CountryNotFound") {
@@ -140,7 +139,7 @@ class CountryController {
         res.status(400).json({ error: MESSAGES.ZONE_NOT_FOUND })
       } else {
         logger.error("CountryController - Error updating country - ", err)
-        res.status(500).json({
+        res.status(400).json({
           message: MESSAGES.FAILED_TO_UPDATE_COUNTRY,
           error: err,
         })

@@ -1,5 +1,7 @@
 import logger from "../logger.js"
 import Country from "../models/countryModel.js"
+import Zone from "../models/zoneModel.js"
+import { getCountryIso2 } from "../utils/countriesData.js"
 
 class CountryService {
   async save(country) {
@@ -23,12 +25,27 @@ class CountryService {
     return countries
   }
 
-  async update(cc, data) {
+  async update(cc, name, zone) {
     logger.debug("CountryService - update")
 
-    const country = await Country.findOne({ cc }).exec()
+    const newZone = await Zone.findOne({ cz: zone })
+    if (!newZone) {
+      throw new Error("ZoneNotFound")
+    }
 
-    if (country.length === 0) {
+    const countryISOCode = getCountryIso2(name)
+    if (!countryISOCode || !name) {
+      throw new Error("InvalidCountryName")
+    }
+
+    const newZoneId = newZone._id?.toString()
+    const newCc = countryISOCode
+
+    const data = { cc: newCc, name: name, zone: newZoneId }
+
+    const country = await Country.findOne({ cc })
+
+    if (!country) {
       throw new Error("CountryNotFound")
     }
 
@@ -39,7 +56,7 @@ class CountryService {
   async delete(cc) {
     logger.debug("CountryService - delete")
 
-    const country = await Country.findOne({ cc }).exec()
+    const country = await Country.findOne({ cc })
 
     if (!country) {
       throw new Error("CountryNotFound")

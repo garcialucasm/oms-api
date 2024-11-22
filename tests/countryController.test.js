@@ -114,9 +114,54 @@ describe("Country API Tests", () => {
     })
   })
 
+  describe("PUT /api/countries/:cc", () => {
+    test("should update an existing country", async () => {
+      const updatedCountryData = {
+        name: "Greece",
+        zone: zone,
+      }
+
+      const response = await request(app)
+        .put("/api/countries/cc/PT")
+        .send(updatedCountryData)
+
+      expect(response.status).toBe(200)
+      expect(response.body.message).toBe(MESSAGES.COUNTRY_UPDATED)
+      expect(response.body.data[0].name).toBe("GREECE")
+      expect(response.body.data[0].cc).toBe("GR")
+    })
+
+    test("should return 400 when updating with invalid zone", async () => {
+      const updatedCountryData = {
+        name: "Portugal",
+        zone: "InvalidZoneCode",
+      }
+
+      const response = await request(app)
+        .put("/api/countries/cc/PT")
+        .send(updatedCountryData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND)
+    })
+
+    test("should return 400 when updating with invalid country name", async () => {
+      const updatedCountryData = {
+        name: "InvalidCountryName",
+        zone: zone,
+      }
+
+      const response = await request(app)
+        .put("/api/countries/cc/GR")
+        .send(updatedCountryData)
+
+      expect(response.status).toBe(400)
+    })
+  })
+
   describe("DELETE /api/countries/cc/:cc", () => {
     test("should delete a country by its code", async () => {
-      const response = await request(app).delete("/api/countries/cc/PT")
+      const response = await request(app).delete("/api/countries/cc/GR")
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.COUNTRY_DELETED)
