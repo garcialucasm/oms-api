@@ -1,23 +1,20 @@
 import {} from "dotenv/config"
-import sqlite3 from "sqlite3"
-import { saveUser } from "../models/userModel.js"
-import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import UserService from "../services/userService.js"
 
-const secureKey = process.env.DB_SECRET_KEY
-const db = new sqlite3.Database("database.db")
+const secureKey = process.env.SECRET_KEY
 
-class userController {
+class UserController {
+
   async register(req, res) {
     const { username, password, idCard, name, role } = req.body
-
     try {
-      const exists = await checkExists(username, idCard)
+      const exists = await UserService.checkExists(username, idCard)
       if (exists) {
         res.status(400).json({ error: "Duplicate username or idCard." })
       } else {
         try {
-          await saveUser(username, password, idCard, name, role, "active")
+          await UserService.saveUser(username, password, idCard, name, role, "active")
           res.status(201).json({ message: "User registered successfully!" })
         } catch (err) {
           if (err.name === "ValidationError") {
@@ -30,9 +27,7 @@ class userController {
             res.status(400).json({
               error: "Duplicate idCard. Please use a unique idCard number.",
             })
-          } else {
-            res.status(500).json({ error: "Error saving person", details: err })
-          }
+          } 
         }
       }
     } catch (error) {
@@ -43,14 +38,13 @@ class userController {
   async login(req, res) {
     const { username, password } = req.body
     try {
-      const user = await fetchUserByUsername(username)
+      const user = await UserService.fetchUserByUsername(username)
       if (user) {
         if (user.status !== "active") {
           res.status(401).json({ error: "Could not login. Inactive user." })
         } else {
           const hashedPasswordFromDB = user.password
-
-          const passwordsMatch = await comparePasswords(
+          const passwordsMatch = await UserService.comparePasswords(
             password,
             hashedPasswordFromDB
           )
@@ -79,41 +73,26 @@ class userController {
     }
   }
 
-  checkExists(username, idCard) {
-    return new Promise((resolve, reject) => {
-      db.get(
-        "SELECT * FROM users WHERE username = ? OR idCard = ?",
-        [username, idCard],
-        (err, row) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(!!row)
-          }
-        }
-      )
-    })
+  async markInactive(req, res) {
+    const { username } = req.params;
+    try {
+      const result = await UserService.markInactive(username);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error: "Error marking user as inactive." });
+    }
   }
 
-  fetchUserByUsername = (username) => {
-    return new Promise((resolve, reject) => {
-      db.get(
-        "SELECT * FROM users WHERE username = ?",
-        [username],
-        (err, row) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(row)
-          }
-        }
-      )
-    })
-  }
-
-  comparePasswords = (password, hashedPassword) => {
-    return bcrypt.compare(password, hashedPassword)
+  async updateUser(req, res) {
+    const { username } = req.params; 
+    const { password, idCard, name } = req.body;
+    try {
+      const result = await UserService.updateUser(username, { password, idCard, name });
+      res.status(200).json(result); 
+    } catch (error) {
+      res.status(500).json({ error: "Error updating user." });
+    }
   }
 }
 
-export default new userController()
+export default new UserController()
