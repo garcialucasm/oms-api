@@ -113,6 +113,10 @@ class ZoneController {
         res
           .status(400)
           .json({ error: "Zone not found with the given zone code" })
+      } else if(err.message === "CountryAssociated") {
+        res.status(400).json({error: "Cannot delete zone because it has countries associated"})
+      } else if(err.message === "OutbreakAssociated") {
+        res.status(400).json({error: "Cannot delete zone because it has outbreaks associated"})
       } else {
         res.status(500).json({ error: "Error deleting Zone" })
       }

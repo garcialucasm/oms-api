@@ -1,11 +1,14 @@
 import VirusService from "../services/virusService.js"
+import logger from "../logger.js"
 class VirusController {
   async create(req, res) {
+    logger.info("POST: /api/viruses")
     try {
       const { cv, name } = req.body
       const virus = await VirusService.create({ cv, name })
       res.status(201).json({ message: "Virus created!", data: virus })
     } catch (err) {
+      logger.error("VirusController - Error creating virus")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
@@ -26,53 +29,72 @@ class VirusController {
   }
 
   async getAll(req, res) {
+    logger.info("GET:/api/viruses")
     try {
-      const virus = await VirusService.getAll()
-      res.status(200).json({ message: "Viruses found!", virus })
-      if (!virus) {
-        res.status(404).json({ error: "No virus found" })
-      }
+      const viruses = await VirusService.getAll()
+      res.status(200).json({ message: "Viruses found!", data: viruses })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving viruses", details: err })
+      logger.error("VirusController - Failed to retrieve virus")
+      if (err.message === "VirusNotFound") {
+        res.status(404).json({ error: "No virus found" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving viruses", details: err })
+      }
     }
   }
 
   async getByName(req, res) {
+    logger.info("GET:/api/viruses by Name: " + req.params.name)
     try {
       const virus = await VirusService.list({ name: req.params.name })
-      if (!virus) {
-        res.status(404).json({ error: "Virus not found" })
-      }
-      res.status(200).json({ message: "Virus found!", virus })
+      res.status(200).json({ message: "Virus found!", data: virus })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving virus", details: err })
+      logger.error("VirusController - Failed to retrieve virus by name")
+      if (err.message === "VirusNotFound") {
+        res.status(404).json({ error: "Virus not found with the given name" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving viruses", details: err })
+      }
     }
   }
 
   async getByCode(req, res) {
+    logger.info("GET:/api/viruses by Code: " + req.params.cv)
     try {
       const virus = await VirusService.list({ cv: req.params.cv })
-      if (!virus) {
-        res.status(404).json({ error: "Virus not found" })
-      }
-      res.status(200).json({ message: "Virus found!", virus })
+      res.status(200).json({ message: "Virus found!", data: virus })
     } catch (err) {
-      res.status(500).json({ error: "Error retrieving virus", details: err })
+      logger.error("VirusController - Failed to retrieve virus by code")
+      if (err.message === "VirusNotFound") {
+        res.status(404).json({ error: "Virus not found with the given code" })
+      } else {
+        res
+          .status(500)
+          .json({ error: "Error retrieving viruses", details: err })
+      }
     }
   }
 
   async update(req, res) {
+    logger.info("PUT:/api/viruses: " + req.params.cv)
     try {
       const virus = await VirusService.update(req.params.cv, req.body)
-      res.status(200).json({ message: "Virus updated!", virus })
+      res.status(200).json({ message: "Virus updated!", data: virus })
     } catch (err) {
+      logger.error("VirusController - Error updating virus")
       if (err.name === "ValidationError") {
         let errorMessage = "Validation Error: "
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message} `
         }
         res.status(400).json({ error: errorMessage.trim() })
-      } else if (err.name === "VirusNotFound") {
+      } else if (err.message === "MissingFields") {
+        res.status(400).json({ error: "Missing required fields" })
+      } else if (err.message === "VirusNotFound") {
         res
           .status(400)
           .json({ error: "Virus not found with the given virus code" })
@@ -88,18 +110,23 @@ class VirusController {
   }
 
   async delete(req, res) {
+    logger.info("DELETE:/api/viruses: " + req.params.cv)
     try {
       await VirusService.delete(req.params.cv)
       res.status(200).json({ message: "Virus deleted!" })
     } catch (err) {
-      if (err.name === "VirusNotFound") {
+      if (err.message === "VirusNotFound") {
         res
           .status(400)
           .json({ error: "Virus not found with the given virus code" })
+      } else if (err.message === "OubreakAssociated") {
+        req.status(400).json({
+          error: "Cannot delete virus because it has outbreaks associated",
+        })
       } else {
         res
           .status(500)
-          .json({ error: "Error deleting vius", details: err.message })
+          .json({ error: "Error deleting virus", details: err.message })
       }
     }
   }

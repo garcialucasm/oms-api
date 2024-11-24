@@ -1,4 +1,5 @@
 import Zone from "../models/zoneModel.js"
+import Outbreak from "../models/outbreakModel.js"
 
 class ZoneService {
   async save(data) {
@@ -37,9 +38,18 @@ class ZoneService {
     return zone
   }
   async removeByCode(cz) {
-    const zone = await Zone.findOne({ cz: cz }).exec()
+    const zone = await Zone.findOne({ cz: cz }).populate("countries")
+    
     if (!zone) {
       throw new Error("ZoneNotFound")
+    }
+    if(zone.countries.length !== 0) {
+      throw new Error("CountryAssociated")
+    }
+    const outbreak = await Outbreak.findOne({zone: zone._id})
+
+    if(outbreak) {
+      throw new Error("OutbreakAssociated")
     }
     await zone.deleteOne()
   }
