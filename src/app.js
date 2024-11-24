@@ -10,7 +10,12 @@ import { guidelineRoutes } from "./routes/guidelineRoutes.js"
 import GuidelineService from "./services/guidelineService.js"
 import logger from "./logger.js"
 
-const mongoConnectionString = process.env.DB_CONNECTION_STRING
+const dbConfig = {
+  test: process.env.DB_TEST_CONNECTION_STRING,
+  dev: process.env.DB_CONNECTION_STRING || "mongodb://mongo:27017/omsdatabase",
+}
+
+const mongoConnectionString = dbConfig[process.env.NODE_ENV]
 const port = process.env.PORT || 3000
 const app = express()
 
@@ -37,12 +42,17 @@ GuidelineService.updateValidity(mongoConnectionString)
 const timeUntilMidnight = () => {
   const now = new Date()
   const nextMidnight = new Date(now)
-  nextMidnight.setHours(24, 0, 0, 0) 
-  return nextMidnight - now 
+  nextMidnight.setHours(24, 0, 0, 0)
+  return nextMidnight - now
 }
 
-setTimeout(() => {
-  GuidelineService.updateValidity() 
-  setInterval(() => { GuidelineService.updateValidity()}, 24 * 60 * 60 * 1000) 
-}, timeUntilMidnight())
+if (process.env.NODE_ENV !== "test") {
+  setTimeout(() => {
+    GuidelineService.updateValidity()
+    setInterval(() => {
+      GuidelineService.updateValidity()
+    }, 24 * 60 * 60 * 1000)
+  }, timeUntilMidnight())
+}
+
 export { app, server }

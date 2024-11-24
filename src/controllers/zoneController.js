@@ -33,7 +33,7 @@ class ZoneController {
     logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
-      res.status(200).json({ message: "Zones found", data: zones })
+      res.status(200).json({ message: "Zones retrieved successfully", data: zones })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zones")
       if (err.message === "ZoneNotFound") {

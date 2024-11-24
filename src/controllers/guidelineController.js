@@ -103,12 +103,10 @@ class GuidelineController {
         }
         res.status(400).json({ message: errorMessage.trim() })
       } else if (err.message === "MissingFields") {
-        res
-          .status(400)
-          .json({
-            error:
-              "Missing required fields. Possible fields for update: cg, outbreak and/or validityPeriod",
-          })
+        res.status(400).json({
+          error:
+            "Missing required fields. Possible fields for update: cg, outbreak and/or validityPeriod",
+        })
       } else if (err.message === "GuidelineNotFound") {
         res
           .status(400)
