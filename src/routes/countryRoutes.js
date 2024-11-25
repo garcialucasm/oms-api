@@ -1,5 +1,6 @@
 import express from "express"
 
+import verifyToken from "../../middleware.js"
 import CountryController from "../controllers/countryController.js"
 
 const router = express.Router()

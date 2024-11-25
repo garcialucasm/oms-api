@@ -1,5 +1,8 @@
 import express from "express"
+import verifyToken from "../../middleware.js"
+
 import zoneController from "../controllers/zoneController.js"
+
 
 const router = express.Router()
 

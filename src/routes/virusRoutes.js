@@ -1,5 +1,6 @@
 import express from "express"
 
+import verifyToken from "../../middleware.js"
 import VirusController from "../controllers/virusController.js"
 
 const router = express.Router()
