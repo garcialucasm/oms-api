@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const OutbreakSchema = new Schema(
   {
@@ -26,25 +26,25 @@ const OutbreakSchema = new Schema(
       required: true,
       validate: {
         validator: function (v) {
-          return v <= Date.now();
+          return v <= Date.now()
         },
         message: "Date of detection cannot be after the current date.",
       },
     },
     endDate: {
-        type: Date,
-        default: null,
+      type: Date,
+      default: null,
     },
     condition: {
-        type: String,
-        default: "active",
-        match: [
-          /^(active|occurred)$/,
-          "The value of condition must be either 'active' or 'occurred'.",
-        ]
-    }
+      type: String,
+      default: "active",
+      match: [
+        /^(active|occurred)$/,
+        "The value of condition must be either 'active' or 'occurred'.",
+      ],
+    },
   },
   { collection: "outbreaks", timestamps: true }
-);
+)
 
-export default model("Outbreak", OutbreakSchema);
+export default model("Outbreak", OutbreakSchema)

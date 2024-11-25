@@ -2,343 +2,225 @@ import Outbreak from "../models/outbreakModel.js"
 import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
 import Guideline from "../models/guidelineModel.js"
-import OutbreakInputDTO from "../DTO/outbreakInputDTO.js"
 
 class OutbreakService {
-  async create(data) {
-    const { co, virus, zone, startDate, endDate } = data
-
-    if (!co || !virus || !zone || !startDate) {
-      throw new Error("MissingRequiredFields")
-    }
-
-    const parsedStartDate = new Date(startDate)
-    const parsedEndDate = endDate ? new Date(endDate) : null
-
-    if (isNaN(parsedStartDate.getTime())) {
-      throw new Error("InvalidStartDateFormat")
-    }
-    if (parsedStartDate > Date.now()) {
-      throw new Error("FutureStartDate")
-    }
-
-    if (endDate && isNaN(parsedEndDate.getTime())) {
-      throw new Error("InvalidEndDateFormat")
-    }
-
-    if (parsedEndDate !== null) {
-      if (parsedEndDate < parsedStartDate) {
-        throw new Error("EndDateBeforeStartDate")
-      } else if (parsedEndDate > Date.now()) {
-        throw new Error("FutureEndDate")
-      }
-    }
-
-    const outbreakVirus = await Virus.findOne({ cv: virus })
-    if (!outbreakVirus) {
-      throw new Error("VirusNotFound")
-    }
-
-    const outbreakZone = await Zone.findOne({ cz: zone })
-    if (!outbreakZone) {
-      throw new Error("ZoneNotFound")
-    }
-
+  async create(outbreakModel) {
     const outbreakExists = await Outbreak.findOne({
-      virus: outbreakVirus._id,
-      zone: outbreakZone._id,
+      virus: outbreakModel.virus,
+      zone: outbreakModel.zone,
       condition: "active",
     })
     if (outbreakExists) {
-      throw new Error("OutbreakAlreadyExists")
+      if (!outbreakModel.endDate) {
+        throw new Error("OutbreakAlreadyExists")
+      }
     }
-
-    //Passar a condition a "occurred" caso o documento tenha endDate
-    let condition
-    if (endDate) {
-      condition = "occurred"
-    } else {
-      condition = "active"
-    }
-
-    const outbreakInputDTO = new OutbreakInputDTO(
-      co,
-      virus,
-      zone,
-      parsedStartDate,
-      parsedEndDate,
-      condition
-    )
-
-    const outbreak = await outbreakInputDTO.toOutbreak()
-
-    await outbreak.save()
-    return outbreak
+    return outbreakModel.save()
   }
 
   async getAll() {
-    const outbreaks = await Outbreak.find()
-      .populate("virus")
-      .populate("zone")
-      .exec()
+    const outbreaks = await Outbreak.find().populate("virus").populate("zone")
     if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
     return outbreaks
   }
 
-  async listByOutbreak(data) {
-    const outbreak = await Outbreak.find(data)
+  async listByOutbreak(co) {
+    const outbreaks = await Outbreak.find({ co })
       .populate("virus")
       .populate("zone")
-      .exec()
-    if (!outbreak || outbreak.length === 0) {
+    if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
-    return outbreak
+    return outbreaks
   }
 
-  async listByVirus(data) {
-    const virus = await Virus.findOne(data)
+  async listByVirus(cv) {
+    const virus = await Virus.findOne({ cv: cv })
     if (!virus) {
       throw new Error("VirusNotFound")
     }
-    const outbreak = await Outbreak.find({ virus: virus._id })
+
+    const outbreaks = await Outbreak.find({ virus: virus._id })
       .populate("virus")
       .populate("zone")
-      .exec()
-    if (!outbreak || outbreak.length === 0) {
+    if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
-    return outbreak
+    return outbreaks
   }
 
-  async listByZone(data) {
-    const zone = await Zone.findOne(data)
+  async listByZone(cz) {
+    const zone = await Zone.findOne({ cz: cz })
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
-    const outbreak = await Outbreak.find({ zone: zone._id })
+
+    const outbreaks = await Outbreak.find({ zone: zone._id })
       .populate("virus")
       .populate("zone")
-      .exec()
-    if (!outbreak || outbreak.length === 0) {
+    if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
-    return outbreak
+    return outbreaks
   }
 
-  async listActOcc(data) {
-    if (data !== "active" && data !== "occurred") {
+  async listActOcc(condition) {
+    if (condition !== "active" && condition !== "occurred") {
       throw new Error("InvalidParameters")
     }
-    const outbreak = await Outbreak.find({ condition: data })
+    const outbreaks = await Outbreak.find({ condition })
       .populate("virus")
       .populate("zone")
-      .exec()
-    if (!outbreak || outbreak.length === 0) {
+    if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
-    return outbreak
+    return outbreaks
   }
 
-  async update(code, data) {
-    const { co, virus, zone, startDate, endDate } = data
-
-    const outbreak = await Outbreak.findOne({ co: code })
+  async update(co, outbreakModel) {
+    const outbreak = await Outbreak.findOne({ co: co })
     if (!outbreak) {
       throw new Error("OutbreakNotFound")
     }
 
-    const parsedEndDate = endDate ? new Date(endDate) : null
-
-    let parsedStartDate = null
-    if (startDate) {
-      parsedStartDate = new Date(startDate)
-
-      if (isNaN(parsedStartDate.getTime())) {
-        throw new Error("InvalidStartDateFormat")
-      }
-
-      if (parsedStartDate > Date.now()) {
-        throw new Error("FutureStartDate")
-      }
-    }
-
-    if (endDate && isNaN(parsedEndDate.getTime())) {
-      throw new Error("InvalidEndDateFormat")
-    }
-
-    if (parsedEndDate !== null) {
-      if (parsedEndDate < parsedStartDate) {
-        throw new Error("EndDateBeforeStartDate")
-      } else if (parsedEndDate > Date.now()) {
-        throw new Error("FutureEndDate")
-      }
-    }
-
-    const virusDB = await Virus.findOne({ cv: virus })
-    if (!virusDB && virus !== undefined) {
+    //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
+    const virusDB = await Virus.findOne({ _id: outbreakModel.virus })
+    if (!virusDB && outbreakModel.virus !== undefined) {
       throw new Error("VirusNotFound")
     }
 
-    const zoneDB = await Zone.findOne({ cz: zone })
-    if (!zoneDB && zone !== undefined) {
+    const zoneDB = await Zone.findOne({ _id: outbreakModel.zone })
+    if (!zoneDB && outbreakModel.zone !== undefined) {
       throw new Error("ZoneNotFound")
     }
 
-    //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
     if (
-      (virus !== undefined &&
+      (outbreakModel.virus.toString() !== undefined &&
         virusDB?._id?.toString() !== outbreak.virus.toString()) ||
-      (zone !== undefined &&
+      (outbreakModel.zone.toString() !== undefined &&
         zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
-        virus: virus !== undefined ? virusDB?._id : outbreak.virus,
-        zone: zone !== undefined ? zoneDB?._id : outbreak.zone,
+        virus: outbreakModel.virus,
+        zone: outbreakModel.zone,
         condition: "active",
       })
       if (outbreakExists) {
-        throw new Error("OutbreakAlreadyExists")
+        if (!outbreakModel.endDate) {
+          throw new Error("OutbreakAlreadyExists")
+        }
       }
     }
-
     //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
     let updatedCondition
-    if (outbreak.endDate !== null) {
+    if (outbreakModel.endDate !== null) {
       updatedCondition = "occurred"
-    } else if (endDate !== null) {
+    } else if (outbreak.endDate !== null) {
       updatedCondition = "occurred"
     } else {
       updatedCondition = "active"
     }
 
-    outbreak.co = co || outbreak.co
+    outbreak.co = outbreakModel.co || outbreak.co
     outbreak.virus = virusDB?._id || outbreak.virus
     outbreak.zone = zoneDB?._id || outbreak.zone
-    outbreak.startDate = parsedStartDate || outbreak.startDate
-    outbreak.endDate = parsedEndDate || outbreak.endDate
+    outbreak.startDate = outbreakModel.startDate || outbreak.startDate
+    outbreak.endDate = outbreakModel.endDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
-    const populatedOutbreak = Outbreak.findOne({ co: outbreak.co })
+
+    return await Outbreak.findOne({ co: outbreak.co })
       .populate("virus")
       .populate("zone")
-    return populatedOutbreak
   }
 
-  async updateByCodes(codeZ, codeV, data) {
-    const { co, virus, zone, startDate, endDate } = data
-
-    //Validar dados da procura
-    const ZoneRoute = await Zone.findOne({ cz: codeZ })
-    if (!ZoneRoute) {
-      throw new Error("ZoneNotFound")
+  async updateByZoneCodeVirusCode(cz, cv, outbreakModel) {
+    console.log(cz)
+    //Validação para verificar se existe algum virus com cv, zona com cz e outbreak com o par
+    const virus = await Virus.findOne({ cv: cv })
+    if (!virus) {
+      throw new Error("VirusSearchedNotFound")
     }
 
-    const VirusRoute = await Virus.findOne({ cv: codeV })
-    if (!VirusRoute) {
-      throw new Error("VirusNotFound")
+    const zone = await Zone.findOne({ cz: cz })
+    if (!zone) {
+      throw new Error("ZoneSearchedNotFound")
     }
 
     const outbreak = await Outbreak.findOne({
-      zone: ZoneRoute._id,
-      virus: VirusRoute._id,
+      zone: zone._id,
+      virus: virus._id,
     })
     if (!outbreak) {
-      throw new Error("OutbreakNotFound")
-    }
-
-    //Validação das datas
-    const parsedEndDate = endDate ? new Date(endDate) : null
-
-    let parsedStartDate = null
-    if (startDate) {
-      parsedStartDate = new Date(startDate)
-
-      if (isNaN(parsedStartDate.getTime())) {
-        throw new Error("InvalidStartDateFormat")
-      }
-
-      if (parsedStartDate > Date.now()) {
-        throw new Error("FutureStartDate")
-      }
-    }
-
-    if (endDate && isNaN(parsedEndDate.getTime())) {
-      throw new Error("InvalidEndDateFormat")
-    }
-
-    if (parsedEndDate !== null) {
-      if (parsedEndDate < parsedStartDate) {
-        throw new Error("EndDateBeforeStartDate")
-      } else if (parsedEndDate > Date.now()) {
-        throw new Error("FutureEndDate")
-      }
-    }
-
-    //Validar dados do update
-    const virusDB = await Virus.findOne({ cv: virus })
-    if (!virusDB && virus !== undefined) {
-      throw new Error("VirusNotFound")
-    }
-
-    const zoneDB = await Zone.findOne({ cz: zone })
-    if (!zoneDB && zone !== undefined) {
-      throw new Error("ZoneNotFound")
+      throw new Error("OutbreakSearchedNotFound")
     }
 
     //Validação para não deixar um outbreak ser alterado para um cz e cv de um outbreak ativo que exista
+    const virusDB = await Virus.findOne({ _id: outbreakModel.virus })
+    if (!virusDB && outbreakModel.virus !== undefined) {
+      throw new Error("VirusNotFound")
+    }
+
+    const zoneDB = await Zone.findOne({ _id: outbreakModel.zone })
+    if (!zoneDB && outbreakModel.zone !== undefined) {
+      throw new Error("ZoneNotFound")
+    }
+
     if (
-      (virus !== undefined &&
+      (outbreakModel.virus.toString() !== undefined &&
         virusDB?._id?.toString() !== outbreak.virus.toString()) ||
-      (zone !== undefined &&
+      (outbreakModel.zone.toString() !== undefined &&
         zoneDB?._id?.toString() !== outbreak.zone.toString())
     ) {
       const outbreakExists = await Outbreak.findOne({
-        virus: virus !== undefined ? virusDB?._id : outbreak.virus,
-        zone: zone !== undefined ? zoneDB?._id : outbreak.zone,
+        virus: outbreakModel.virus,
+        zone: outbreakModel.zone,
         condition: "active",
       })
       if (outbreakExists) {
-        throw new Error("OutbreakAlreadyExists")
+        if (!outbreakModel.endDate) {
+          throw new Error("OutbreakAlreadyExists")
+        }
       }
     }
-
     //Passar a condition a "occurred" caso o documento a editar já tenha endDate e caso se escreva uma endDate
     let updatedCondition
-    if (outbreak.endDate) {
+    if (outbreakModel.endDate !== null) {
       updatedCondition = "occurred"
-    } else if (endDate) {
+    } else if (outbreak.endDate !== null) {
       updatedCondition = "occurred"
     } else {
       updatedCondition = "active"
     }
 
-    outbreak.co = co || outbreak.co
+    outbreak.co = outbreakModel.co || outbreak.co
     outbreak.virus = virusDB?._id || outbreak.virus
     outbreak.zone = zoneDB?._id || outbreak.zone
-    outbreak.startDate = parsedStartDate || outbreak.startDate
-    outbreak.endDate = parsedEndDate || outbreak.endDate
+    outbreak.startDate = outbreakModel.startDate || outbreak.startDate
+    outbreak.endDate = outbreakModel.endDate || outbreak.endDate
     outbreak.condition = updatedCondition || outbreak.condition
 
     await outbreak.save()
-    const populatedOutbreak = Outbreak.findOne({ co: outbreak.co })
+
+    return await Outbreak.findOne({ co: outbreak.co })
       .populate("virus")
       .populate("zone")
-    return populatedOutbreak
   }
 
   async delete(co) {
-    const outbreak = await Outbreak.findOne({ co: co }).exec()
+    const outbreak = await Outbreak.findOne({ co: co })
     if (!outbreak) {
       throw new Error("OutbreakNotFound")
     }
+
     const guideline = await Guideline.findOne({ outbreak: outbreak._id })
     if (guideline) {
       throw new Error("GuidelineAssociated")
     }
+
     await outbreak.deleteOne()
   }
 }
