@@ -3,15 +3,9 @@ import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
 import Outbreak from "../models/outbreakModel.js"
 
 class GuidelineService {
-  async save({ cg, outbreak, validityPeriod }) {
-    const guidelineInputDTO = new GuidelineInputDTO(
-      cg,
-      outbreak,
-      validityPeriod
-    )
-    const guideline = await guidelineInputDTO.toGuideline()
-    await guideline.save()
-    return guideline
+  async save(guidelineModel) {
+    await guidelineModel.save()
+    return guidelineModel
   }
   async list() {
     const guidelines = await Guideline.find().populate("outbreak")
@@ -42,10 +36,6 @@ class GuidelineService {
 
   async editByCode(code, data) {
     const { cg, outbreak, validityPeriod } = data
-
-    if (!cg && !outbreak && !validityPeriod) {
-      throw new Error("MissingFields")
-    }
     const guideline = await Guideline.findOne({ cg: code })
     if (!guideline) {
       throw new Error("GuidelineNotFound")

@@ -1,16 +1,17 @@
 import GuidelineService from "../services/guidelineService.js"
+import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
+import GuidelineOutputDTO from "../DTO/guidelineOutputDTO.js"
 import logger from "../logger.js"
 class GuidelineController {
   async createGuideline(req, res) {
     logger.info("POST: /api/guidelines")
     try {
       const { cg, outbreak, validityPeriod } = req.body
-      const guideline = await GuidelineService.save({
-        cg,
-        outbreak,
-        validityPeriod,
-      })
-      res.status(201).json({ message: "Guideline created", data: guideline })
+      const inputDTO = new GuidelineInputDTO({ cg, outbreak, validityPeriod })
+      const guidelineModel = await inputDTO.toGuideline()
+      const savedGuideline = await GuidelineService.save(guidelineModel)
+      const outputDTO = new GuidelineOutputDTO(savedGuideline)
+      res.status(201).json({ message: "Guideline created", data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error creating guideline")
       if (err.name === "ValidationError") {
@@ -19,6 +20,8 @@ class GuidelineController {
           errorMessage += `${err.errors[field].message}`
         }
         res.status(400).json({ error: errorMessage.trim() })
+      } else if (err.message === "MissingFields") {
+        res.status(400).json({ error: "Missing required fields" })
       } else if (err.message === "OutbreakNotFound") {
         res.status(400).json({
           error: "No outbreaks with the given outbreak code",
@@ -37,7 +40,8 @@ class GuidelineController {
     logger.info("GET:/api/guidelines")
     try {
       const guidelines = await GuidelineService.list()
-      res.status(200).json({ message: "Guidelines found", data: guidelines })
+      const outputDTOs = guidelines.map((guideline) => new GuidelineOutputDTO(guideline))
+      res.status(200).json({ message: "Guidelines found", data: outputDTOs })
     } catch (err) {
       logger.error("GuidelineController - Failed to retrieve guidelines", err)
       if (err.message === "GuidelineNotFound") {
@@ -52,7 +56,8 @@ class GuidelineController {
     logger.info("GET:/api/guidelines by Code: " + req.params.cg)
     try {
       const guideline = await GuidelineService.listByCode(req.params.cg)
-      res.status(200).json({ message: "Guideline found", data: guideline })
+      const outputDTO = new GuidelineOutputDTO(guideline)
+      res.status(200).json({ message: "Guideline found", data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Failed to retrieve guideline by code")
       if (err.message === "GuidelineNotFound") {
@@ -67,7 +72,8 @@ class GuidelineController {
     logger.info("GET:/api/guidelines by Status: " + req.params.status)
     try {
       const guideline = await GuidelineService.listByStatus(req.params.status)
-      res.status(200).json({ message: "Guideline found", data: guideline })
+      const outputDTO = new GuidelineOutputDTO(guideline)
+      res.status(200).json({ message: "Guideline found", data: outputDTO })
     } catch (err) {
       logger.error(
         "GuidelineController - Failed to retrieve guideline by status"
@@ -88,12 +94,10 @@ class GuidelineController {
     logger.info("PUT: /api/guidelines")
     try {
       const { cg, outbreak, validityPeriod } = req.body
-      const guideline = await GuidelineService.editByCode(req.params.cg, {
-        cg,
-        outbreak,
-        validityPeriod,
-      })
-      res.status(201).json({ message: "Guideline updated", data: guideline })
+      const inputDTO = new GuidelineInputDTO({cg, outbreak, validityPeriod})
+      const guideline = await GuidelineService.editByCode(req.params.cg, inputDTO)
+      const outputDTO = new GuidelineOutputDTO(guideline)
+      res.status(201).json({ message: "Guideline updated", data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error updating guideline")
       if (err.name === "ValidationError") {

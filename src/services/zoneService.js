@@ -3,7 +3,8 @@ import Outbreak from "../models/outbreakModel.js"
 
 class ZoneService {
   async save(zoneModel) {
-    return zoneModel.save()
+    await zoneModel.save()
+    return zoneModel
   }
   async list() {
     const zones = await Zone.find().populate({path: "countries", select: "cc name -_id -zone"})
