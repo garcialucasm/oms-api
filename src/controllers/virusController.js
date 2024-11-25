@@ -14,7 +14,13 @@ class VirusController {
       res.status(201).json({ message: MESSAGES.VIRUS_CREATED, data: outputDTO })
     } catch (err) {
       logger.error("VirusController - Error creating virus", err)
-      if (err.message === "MissingRequiredFields") {
+      if (err.name === "ValidationError") {
+        let errorMessage = `${MESSAGES.VALIDATION_ERROR}: `
+        for (let field in err.errors) {
+          errorMessage += `${err.errors[field].message}`
+        }
+        res.status(400).json({ message: errorMessage.trim(), error: err })
+      } else if (err.message === "MissingRequiredFields") {
         res.status(400).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
       } else if (err.code === 11000) {
         res.status(400).json({
@@ -57,12 +63,10 @@ class VirusController {
       if (err.message === "VirusNotFound") {
         res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_NAME })
       } else {
-        res
-          .status(500)
-          .json({
-            error: MESSAGES.FAILED_TO_RETRIEVE_VIRUS_BY_NAME,
-            details: err.message,
-          })
+        res.status(500).json({
+          error: MESSAGES.FAILED_TO_RETRIEVE_VIRUS_BY_NAME,
+          details: err.message,
+        })
       }
     }
   }
