@@ -42,7 +42,7 @@ class ZoneController {
     try {
       const zones = await ZoneService.list()
       const outputDTOs = zones.map((zone) => new ZoneOutputDTO(zone))
-      res.status(200).json({ message: "Zones found", data: outputDTOs })
+      res.status(200).json({ message: "Zones retrieved successfully", data: outputDTOs })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zones")
       if (err.message === "ZoneNotFound") {
