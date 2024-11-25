@@ -1,4 +1,7 @@
 import ZoneService from "../services/zoneService.js"
+import ZoneInputDTO from "../DTO/zoneInputDTO.js"
+import ZoneOutputDTO from "../DTO/zoneOutputDTO.js"
+
 import logger from "../logger.js"
 
 class ZoneController {
@@ -6,10 +9,13 @@ class ZoneController {
     logger.info("POST: /api/zones")
     try {
       const { cz, name } = req.body
-      const zone = await ZoneService.save({ cz, name })
+      const inputDTO = new ZoneInputDTO({cz, name});
+      const zoneModel = await inputDTO.toZone();
+      const savedZone = await ZoneService.save(zoneModel);
+      const outputDTO = new ZoneOutputDTO(savedZone);
       res.status(201).json({
         message: "Zone created successfully",
-        data: zone,
+        data: outputDTO,
       })
     } catch (err) {
       logger.error("ZoneController - Error creating zone")
@@ -19,6 +25,8 @@ class ZoneController {
           errorMessage += `${err.errors[field].message}`
         }
         res.status(400).json({ error: errorMessage.trim() })
+      } else if(err.message === "MissingFields") {
+        res.status(400).json({error: "Missing cz and/or name parameters"})
       } else if (err.code === 11000) {
         res.status(400).json({
           error: "Duplicate zone code or zone name. Please use unique values.",
@@ -33,7 +41,8 @@ class ZoneController {
     logger.info("GET:/api/zones")
     try {
       const zones = await ZoneService.list()
-      res.status(200).json({ message: "Zones found", data: zones })
+      const outputDTOs = zones.map((zone) => new ZoneOutputDTO(zone))
+      res.status(200).json({ message: "Zones found", data: outputDTOs })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zones")
       if (err.message === "ZoneNotFound") {
@@ -48,7 +57,8 @@ class ZoneController {
     logger.info("GET:/api/zones by Name: " + req.params.name)
     try {
       const zone = await ZoneService.listByName(req.params.name)
-      res.status(200).json({ message: "Zone found", data: zone })
+      const outputDTO = new ZoneOutputDTO(zone)
+      res.status(200).json({ message: "Zone found", data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by name")
       if (err.message === "ZoneNotFound") {
@@ -63,7 +73,8 @@ class ZoneController {
     logger.info("GET:/api/zones by Code: " + req.params.cz)
     try {
       const zone = await ZoneService.listByCode(req.params.cz)
-      res.status(200).json({ message: "Zone found", data: zone })
+      const outputDTO = new ZoneOutputDTO(zone)
+      res.status(200).json({ message: "Zone found", data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by code")
       if (err.message === "ZoneNotFound") {
@@ -78,8 +89,10 @@ class ZoneController {
     logger.info("PUT:/api/zones: " + req.params.cz)
     try {
       const { cz, name } = req.body
-      const zone = await ZoneService.editByCode(req.params.cz, { cz, name })
-      res.status(201).json({ message: "Zone updated", data: zone })
+      const inputDTO = new ZoneInputDTO({cz, name})
+      const zone = await ZoneService.editByCode(req.params.cz, inputDTO)
+      const outputDTO = new ZoneOutputDTO(zone)
+      res.status(201).json({ message: "Zone updated", data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Error updating zone")
       if (err.name === "ValidationError") {
