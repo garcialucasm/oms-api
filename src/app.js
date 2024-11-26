@@ -7,6 +7,7 @@ import { outbreakRoutes } from "./routes/outbreakRoutes.js"
 import { zoneRoutes } from "./routes/zoneRoutes.js"
 import { countryRoutes } from "./routes/countryRoutes.js"
 import { guidelineRoutes } from "./routes/guidelineRoutes.js"
+import { userRoutes } from "./routes/userRoutes.js"
 import GuidelineService from "./services/guidelineService.js"
 import logger from "./logger.js"
 
@@ -36,6 +37,7 @@ app.use("/api/zones", zoneRoutes)
 app.use("/api/countries", countryRoutes)
 app.use("/api/outbreaks", outbreakRoutes)
 app.use("/api/guidelines", guidelineRoutes)
+app.use("/api/auth", userRoutes)
 
 GuidelineService.updateValidity(mongoConnectionString)
 
