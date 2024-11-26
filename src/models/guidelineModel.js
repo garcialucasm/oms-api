@@ -22,7 +22,7 @@ const GuidelineSchema = new Schema(
     isExpired: { type: Boolean, default: false },
   },
   {
-    timestamps: { createdAt: "guidelineDate"},
+    timestamps: true,
     collection: "guidelines",
   }
 )

@@ -5,11 +5,11 @@ import VirusController from "../controllers/virusController.js"
 
 const router = express.Router()
 
-router.post("/", VirusController.create);
-router.get("/", VirusController.getAll);
-router.get("/name/:name", VirusController.getByName);
-router.get("/cv/:cv", VirusController.getByCode);
-router.put("/:cv", VirusController.update);
-router.delete("/:cv", VirusController.delete);
+router.post("/", verifyToken, VirusController.create)
+router.get("/", verifyToken, VirusController.getAll)
+router.get("/name/:name", verifyToken, VirusController.getByName)
+router.get("/cv/:cv", verifyToken, VirusController.getByCode)
+router.put("/:cv", verifyToken, VirusController.update)
+router.delete("/:cv", verifyToken, VirusController.delete)
 
 export { router as virusRoutes }

@@ -224,8 +224,8 @@ describe("Virus API Tests with Authentication", () => {
 
     test("should return 404 if virus to delete is not found", async () => {
       const response = await request(app)
-      .delete("/api/viruses/ZZ99")
-      .set("Authorization", `Bearer ${authToken}`)
+        .delete("/api/viruses/ZZ99")
+        .set("Authorization", `Bearer ${authToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
