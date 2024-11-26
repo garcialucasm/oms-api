@@ -2,53 +2,65 @@ import Zone from "../models/zoneModel.js"
 import Outbreak from "../models/outbreakModel.js"
 
 class ZoneService {
-  async save(data) {
-    const zone = new Zone(data)
-    await zone.save()
-    return zone
+  async save(zoneModel) {
+    await zoneModel.save()
+    return zoneModel
   }
   async list() {
-    const zones = await Zone.find().populate("countries")
-    if (!zones) {
+    const zones = await Zone.find().populate({
+      path: "countries",
+      select: "cc name -_id -zone",
+    })
+    if (zones.length === 0) {
       throw new Error("ZoneNotFound")
     }
     return zones
   }
   async listByName(name) {
-    const zone = await Zone.findOne({ name: name }).populate("countries")
+    const zone = await Zone.findOne({ name: name }).populate({
+      path: "countries",
+      select: "cc name -_id -zone",
+    })
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
     return zone
   }
   async listByCode(cz) {
-    const zone = await Zone.findOne({ cz: cz }).populate("countries")
+    const zone = await Zone.findOne({ cz: cz }).populate({
+      path: "countries",
+      select: "cc name -_id -zone",
+    })
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
     return zone
   }
-  async editByCode(cz, data) {
-    const zone = await Zone.findOne({ cz: cz }).populate("countries")
+  async editByCode(cz, zoneModel) {
+    const zone = await Zone.findOne({ cz: cz }).populate({
+      path: "countries",
+      select: "cc name -_id -zone",
+    })
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
-    Object.assign(zone, data)
+    zone.cz = zoneModel.cz || zone.cz
+    zone.name = zoneModel.name || zone.name
     await zone.save()
     return zone
   }
   async removeByCode(cz) {
     const zone = await Zone.findOne({ cz: cz }).populate("countries")
-    
+
     if (!zone) {
       throw new Error("ZoneNotFound")
     }
-    if(zone.countries.length !== 0) {
+    if (zone.countries.length !== 0) {
       throw new Error("CountryAssociated")
     }
-    const outbreak = await Outbreak.findOne({zone: zone._id})
+    const outbreak = await Outbreak.findOne({ zone: zone._id })
 
-    if(outbreak) {
+    if (outbreak) {
       throw new Error("OutbreakAssociated")
     }
     await zone.deleteOne()
