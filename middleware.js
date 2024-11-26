@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 
-import { MESSAGES } from "./src/utils/responseMessages"
+import { MESSAGES } from "./src/utils/responseMessages.js"
 
 const secureKey = process.env.SECRET_KEY
 

@@ -39,7 +39,7 @@ app.use("/api/outbreaks", outbreakRoutes)
 app.use("/api/guidelines", guidelineRoutes)
 app.use("/api/auth", userRoutes)
 
-GuidelineService.updateValidity(mongoConnectionString)
+GuidelineService.updateValidity()
 
 const timeUntilMidnight = () => {
   const now = new Date()
