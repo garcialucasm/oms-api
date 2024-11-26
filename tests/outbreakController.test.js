@@ -999,5 +999,3 @@ describe("Outbreak API Tests with Authentication", () => {
         expect(response.body.error).toBe(MESSAGES.ZONE_SEARCHED_NOT_FOUND)
       })
   })
-
-})
