@@ -1,11 +1,11 @@
 import {} from "dotenv/config"
 import jwt from "jsonwebtoken"
 import UserService from "../services/userService.js"
+import logger from "../logger.js"
 
 const secureKey = process.env.SECRET_KEY
 
 class UserController {
-
   async register(req, res) {
     const { username, password, idCard, name, role } = req.body
     try {
@@ -14,7 +14,14 @@ class UserController {
         res.status(400).json({ error: "Duplicate username or idCard." })
       } else {
         try {
-          await UserService.saveUser(username, password, idCard, name, role, "active")
+          await UserService.saveUser(
+            username,
+            password,
+            idCard,
+            name,
+            role,
+            "active"
+          )
           res.status(201).json({ message: "User registered successfully!" })
         } catch (err) {
           if (err.name === "ValidationError") {
@@ -27,10 +34,11 @@ class UserController {
             res.status(400).json({
               error: "Duplicate idCard. Please use a unique idCard number.",
             })
-          } 
+          }
         }
       }
     } catch (error) {
+      logger.error("UserController - register: ", error.message)
       res.send("Error:", error)
     }
   }
@@ -69,28 +77,35 @@ class UserController {
         res.status(401).json({ error: "User not found" })
       }
     } catch (error) {
+      logger.error("UserController - login: ", error.message)
       res.status(500).json({ error: error })
     }
   }
 
   async markInactive(req, res) {
-    const { username } = req.params;
+    const { username } = req.params
     try {
-      const result = await UserService.markInactive(username);
-      res.status(200).json(result);
+      const result = await UserService.markInactive(username)
+      res.status(200).json(result)
     } catch (error) {
-      res.status(500).json({ error: "Error marking user as inactive." });
+      logger.error("UserController - markInactive: ", error.message)
+      res.status(500).json({ error: "Error marking user as inactive." })
     }
   }
 
   async updateUser(req, res) {
-    const { username } = req.params; 
-    const { password, idCard, name } = req.body;
+    const { username } = req.params
+    const { password, idCard, name } = req.body
     try {
-      const result = await UserService.updateUser(username, { password, idCard, name });
-      res.status(200).json(result); 
+      const result = await UserService.updateUser(username, {
+        password,
+        idCard,
+        name,
+      })
+      res.status(200).json(result)
     } catch (error) {
-      res.status(500).json({ error: "Error updating user." });
+      logger.error("UserController - updateUser: ", error.message)
+      res.status(500).json({ error: "Error updating user." })
     }
   }
 }

@@ -1,4 +1,7 @@
 import jwt from "jsonwebtoken"
+
+import { MESSAGES } from "./src/utils/responseMessages"
+
 const secureKey = process.env.SECRET_KEY
 
 const verifyToken = (req, res, next) => {
@@ -8,13 +11,10 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     if (req.baseUrl === "/api/auth/register") {
       return res.status(403).json({ error: "Access denied for this route" })
-    }
-    else if (req.method === "GET") {
+    } else if (req.method === "GET") {
       return next()
     } else {
-      return res
-        .status(403)
-        .json({ error: "Authentication required for this action" })
+      return res.status(403).json({ error: MESSAGES.AUTH_REQUIRED })
     }
   }
 
@@ -22,7 +22,7 @@ const verifyToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ error: "Invalid token" })
     }
-      //Os Admins podem fazer tudo, entao nao precisam de nenhuma verificaçao adicional
+    //Os Admins podem fazer tudo, entao nao precisam de nenhuma verificaçao adicional
     if (decodedUser.userRole === "admin") {
       return next()
     } //Limitar os employees a GET em zones e countries, bloquear açoes de deletes em tudo, permitir as restantes
@@ -38,7 +38,7 @@ const verifyToken = (req, res, next) => {
         }
       } else if (req.method === "DELETE") {
         return res.status(403).json({ error: "Access denied for this route" })
-      } 
+      }
     } else {
       return next()
     }
