@@ -2,10 +2,15 @@ import Guideline from "../models/guidelineModel.js"
 import Outbreak from "../models/outbreakModel.js"
 
 class GuidelineInputDTO {
-  constructor(cg, outbreak, validityPeriod) {
+  constructor({cg, outbreak, validityPeriod}) {
+    if(!cg || !outbreak || !validityPeriod) {
+      throw new Error("MissingRequiredFields")
+    }
+
     this.cg = cg
     this.outbreak = outbreak
     this.validityPeriod = validityPeriod
+    
   }
 
   async toGuideline() {
