@@ -1,7 +1,12 @@
 import sqlite3 from "sqlite3"
 import bcrypt from "bcrypt"
 
-const db = new sqlite3.Database("database.db")
+const dbConfig = {
+  test: process.env.DB_SQLITE_TEST,
+  dev: process.env.DB_SQLITE,
+}
+
+const db = new sqlite3.Database(dbConfig[process.env.NODE_ENV])
 
 const UserSchema = {
   username: String,

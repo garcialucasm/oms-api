@@ -2,9 +2,13 @@ import sqlite3 from "sqlite3"
 import bcrypt from "bcrypt"
 import {} from "dotenv/config"
 
+const dbConfig = {
+  test: process.env.DB_SQLITE_TEST,
+  dev: process.env.DB_SQLITE,
+}
 
+const db = new sqlite3.Database(dbConfig[process.env.NODE_ENV])
 const saltRounds = parseInt(process.env.SALT_ROUNDS)
-const db = new sqlite3.Database("database.db")
 
 class UserService {
     async checkExists(username, idCard) {
