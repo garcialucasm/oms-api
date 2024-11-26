@@ -1,10 +1,10 @@
 class GuidelineOutputDTO {
     constructor(guideline) {
       this.cg = guideline.cg
-      this.outbreak = guideline.outbreak?.co || guideline.outbreak
+      this.outbreak = guideline.outbreak
       this.validityPeriod = guideline.validityPeriod
       this.createdAt = guideline.createdAt
-      this.isExpired = guideline.condition
+      this.isExpired = guideline.isExpired
       this.updatedAt = guideline.updatedAt
     }
   }

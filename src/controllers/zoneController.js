@@ -2,7 +2,9 @@ import ZoneService from "../services/zoneService.js"
 import ZoneInputDTO from "../DTO/zoneInputDTO.js"
 import ZoneOutputDTO from "../DTO/zoneOutputDTO.js"
 
+
 import logger from "../logger.js"
+import { MESSAGES } from "../utils/responseMessages.js"
 
 class ZoneController {
   async createZone(req, res) {
@@ -14,25 +16,19 @@ class ZoneController {
       const savedZone = await ZoneService.save(zoneModel);
       const outputDTO = new ZoneOutputDTO(savedZone);
       res.status(201).json({
-        message: "Zone created successfully",
+        message: MESSAGES.ZONE_CREATED,
         data: outputDTO,
       })
     } catch (err) {
       logger.error("ZoneController - Error creating zone")
-      if (err.name === "ValidationError") {
-        let errorMessage = "Validation Error: "
-        for (let field in err.errors) {
-          errorMessage += `${err.errors[field].message}`
-        }
-        res.status(400).json({ error: errorMessage.trim() })
-      } else if(err.message === "MissingFields") {
-        res.status(400).json({error: "Missing cz and/or name parameters"})
+      if (err.message === "MissingRequiredFields") {
+        res.status(400).json({error: MESSAGES.MISSING_REQUIRED_FIELDS})
       } else if (err.code === 11000) {
         res.status(400).json({
-          error: "Duplicate zone code or zone name. Please use unique values.",
+          error: MESSAGES.DUPLICATE_ZONE,
         })
       } else {
-        res.status(500).json({ error: "Error saving zone" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_CREATE_ZONE })
       }
     }
   }
@@ -42,13 +38,13 @@ class ZoneController {
     try {
       const zones = await ZoneService.list()
       const outputDTOs = zones.map((zone) => new ZoneOutputDTO(zone))
-      res.status(200).json({ message: "Zones retrieved successfully", data: outputDTOs })
+      res.status(200).json({ message: MESSAGES.ZONES_RETRIEVED, data: outputDTOs })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zones")
       if (err.message === "ZoneNotFound") {
-        res.status(404).json({ error: "No zones found" })
+        res.status(404).json({ error: MESSAGES.NO_ZONES_FOUND })
       } else {
-        res.status(500).json({ error: "Error retrieving zones" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_ZONES })
       }
     }
   }
@@ -58,13 +54,13 @@ class ZoneController {
     try {
       const zone = await ZoneService.listByName(req.params.name)
       const outputDTO = new ZoneOutputDTO(zone)
-      res.status(200).json({ message: "Zone found", data: outputDTO })
+      res.status(200).json({ message: MESSAGES.ZONE_RETRIEVED_BY_NAME, data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by name")
       if (err.message === "ZoneNotFound") {
-        res.status(404).json({ error: "No zone found with the given name" })
+        res.status(404).json({ error: MESSAGES.ZONE_NOT_FOUND_BY_NAME })
       } else {
-        res.status(500).json({ error: "Error retrieving zones" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_ZONE_BY_NAME })
       }
     }
   }
@@ -74,13 +70,13 @@ class ZoneController {
     try {
       const zone = await ZoneService.listByCode(req.params.cz)
       const outputDTO = new ZoneOutputDTO(zone)
-      res.status(200).json({ message: "Zone found", data: outputDTO })
+      res.status(200).json({ message: MESSAGES.ZONE_RETRIEVED_BY_CODE, data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Failed to retrieve zone by code")
       if (err.message === "ZoneNotFound") {
-        res.status(404).json({ error: "No zone found with the given code" })
+        res.status(404).json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
       } else {
-        res.status(500).json({ error: "Error retrieving zones" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_ZONE_BY_CODE })
       }
     }
   }
@@ -92,25 +88,21 @@ class ZoneController {
       const inputDTO = new ZoneInputDTO({cz, name})
       const zone = await ZoneService.editByCode(req.params.cz, inputDTO)
       const outputDTO = new ZoneOutputDTO(zone)
-      res.status(201).json({ message: "Zone updated", data: outputDTO })
+      res.status(201).json({ message: MESSAGES.ZONE_UPDATED, data: outputDTO })
     } catch (err) {
       logger.error("ZoneController - Error updating zone")
-      if (err.name === "ValidationError") {
-        let errorMessage = "Validation Error:"
-        for (let field in err.errors) {
-          errorMessage += `${err.errors[field].message}`
-        }
-        res.status(400).json({ error: errorMessage.trim() })
+      if(err.message === "MissingRequiredFields") {
+        res.status(400).json({error: MESSAGES.MISSING_REQUIRED_FIELDS})
       } else if (err.message === "ZoneNotFound") {
         res
           .status(400)
-          .json({ error: "Zone not found with the given zone code" })
+          .json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
       } else if (err.code === 11000) {
         res.status(400).json({
-          error: "Duplicate zone code or zone name. Please use unique values.",
+          error: MESSAGES.DUPLICATE_ZONE,
         })
       } else {
-        res.status(500).json({ error: "Error updating zone" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_UPDATE_ZONE })
       }
     }
   }
@@ -119,19 +111,19 @@ class ZoneController {
     logger.info("DELETE:/api/zones: " + req.params.cz)
     try {
       await ZoneService.removeByCode(req.params.cz)
-      res.status(200).json({ message: "Zone deleted", data: req.params.cz })
+      res.status(200).json({ message: MESSAGES.ZONE_DELETED, data: req.params.cz })
     } catch (err) {
       logger.error("ZoneController - Error deleting zone")
       if (err.message === "ZoneNotFound") {
         res
           .status(400)
-          .json({ error: "Zone not found with the given zone code" })
+          .json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
       } else if(err.message === "CountryAssociated") {
-        res.status(400).json({error: "Cannot delete zone because it has countries associated"})
+        res.status(400).json({error: MESSAGES.CANNOT_DELETE_COUNTRIES_ASSOCIATED})
       } else if(err.message === "OutbreakAssociated") {
-        res.status(400).json({error: "Cannot delete zone because it has outbreaks associated"})
+        res.status(400).json({error: MESSAGES.CANNOT_DELETE_OUTBREAKS_ASSOCIATED})
       } else {
-        res.status(500).json({ error: "Error deleting Zone" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_DELETE_ZONE })
       }
     }
   }

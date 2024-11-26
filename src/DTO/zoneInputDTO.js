@@ -3,7 +3,7 @@ import Zone from "../models/zoneModel.js"
 class ZoneInputDTO {
   constructor({ cz, name }) {
     if (!cz || !name) {
-      throw new Error("MissingFields")
+      throw new Error("MissingRequiredFields")
     }
     this.cz = cz
     this.name = name

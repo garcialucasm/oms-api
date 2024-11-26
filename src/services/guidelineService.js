@@ -1,5 +1,4 @@
 import Guideline from "../models/guidelineModel.js"
-import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
 import Outbreak from "../models/outbreakModel.js"
 
 class GuidelineService {
@@ -8,14 +7,20 @@ class GuidelineService {
     return guidelineModel
   }
   async list() {
-    const guidelines = await Guideline.find().populate("outbreak")
-    if (!guidelines) {
+    const guidelines = await Guideline.find().populate({
+      path: "outbreak",
+      select: "co zone virus condition -_id",
+    })
+    if (guidelines.length === 0) {
       throw new Error("GuidelineNotFound")
     }
     return guidelines
   }
   async listByCode(cg) {
-    const guideline = await Guideline.findOne({ cg: cg }).populate("outbreak")
+    const guideline = await Guideline.findOne({ cg: cg }).populate({
+      path: "outbreak",
+      select: "co zone virus condition -_id",
+    })
     if (!guideline) {
       throw new Error("GuidelineNotFound")
     }
@@ -27,7 +32,7 @@ class GuidelineService {
     }
     const guideline = await Guideline.findOne({
       isExpired: isExpired,
-    }).populate("outbreak")
+    }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
     if (!guideline) {
       throw new Error("GuidelineNotFound")
     }
@@ -53,7 +58,7 @@ class GuidelineService {
     await guideline.save()
     const populatedGuideline = await Guideline.findOne({
       outbreak: guideline.outbreak,
-    }).populate("outbreak")
+    }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
 
     return populatedGuideline
   }
@@ -84,7 +89,7 @@ class GuidelineService {
 
       for (const guideline of guidelines) {
         const expirationDate = new Date(
-          guideline.guidelineDate.getTime() +
+          guideline.createdAt.getTime() +
             guideline.validityPeriod * 24 * 60 * 60 * 1000
         )
 

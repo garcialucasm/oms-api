@@ -2,6 +2,7 @@ import GuidelineService from "../services/guidelineService.js"
 import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
 import GuidelineOutputDTO from "../DTO/guidelineOutputDTO.js"
 import logger from "../logger.js"
+import { MESSAGES } from "../utils/responseMessages.js"
 class GuidelineController {
   async createGuideline(req, res) {
     logger.info("POST: /api/guidelines")
@@ -11,27 +12,21 @@ class GuidelineController {
       const guidelineModel = await inputDTO.toGuideline()
       const savedGuideline = await GuidelineService.save(guidelineModel)
       const outputDTO = new GuidelineOutputDTO(savedGuideline)
-      res.status(201).json({ message: "Guideline created", data: outputDTO })
+      res.status(201).json({ message: MESSAGES.GUIDELINE_CREATED, data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error creating guideline")
-      if (err.name === "ValidationError") {
-        let errorMessage = "Validation Error: "
-        for (let field in err.errors) {
-          errorMessage += `${err.errors[field].message}`
-        }
-        res.status(400).json({ error: errorMessage.trim() })
-      } else if (err.message === "MissingFields") {
-        res.status(400).json({ error: "Missing required fields" })
+      if (err.message === "MissingRequiredFields") {
+        res.status(400).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
       } else if (err.message === "OutbreakNotFound") {
         res.status(400).json({
-          error: "No outbreaks with the given outbreak code",
+          error: MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE,
         })
       } else if (err.code === 11000) {
         res.status(400).json({
-          error: "Duplicate guideline code. Please use unique values.",
+          error: MESSAGES.DUPLICATE_GUIDELINE,
         })
       } else {
-        res.status(500).json({ error: "Error saving guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_CREATE_GUIDELINE })
       }
     }
   }
@@ -41,13 +36,13 @@ class GuidelineController {
     try {
       const guidelines = await GuidelineService.list()
       const outputDTOs = guidelines.map((guideline) => new GuidelineOutputDTO(guideline))
-      res.status(200).json({ message: "Guidelines found", data: outputDTOs })
+      res.status(200).json({ message: MESSAGES.GUIDELINES_RETRIEVED, data: outputDTOs })
     } catch (err) {
       logger.error("GuidelineController - Failed to retrieve guidelines", err)
       if (err.message === "GuidelineNotFound") {
-        res.status(404).json({ error: "No guidelines found" })
+        res.status(404).json({ error: MESSAGES.NO_GUIDELINES_FOUND })
       } else {
-        res.status(500).json({ error: "Error retrieving Guidelines" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_GUIDELINES })
       }
     }
   }
@@ -57,13 +52,13 @@ class GuidelineController {
     try {
       const guideline = await GuidelineService.listByCode(req.params.cg)
       const outputDTO = new GuidelineOutputDTO(guideline)
-      res.status(200).json({ message: "Guideline found", data: outputDTO })
+      res.status(200).json({ message: MESSAGES.GUIDELINE_RETRIEVED_BY_CODE, data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Failed to retrieve guideline by code")
       if (err.message === "GuidelineNotFound") {
-        res.status(404).json({ error: "No guidelines match the given code" })
+        res.status(404).json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE })
       } else {
-        res.status(500).json({ error: "Error retrieving Guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_GUIDELINE_BY_CODE })
       }
     }
   }
@@ -73,7 +68,7 @@ class GuidelineController {
     try {
       const guideline = await GuidelineService.listByStatus(req.params.status)
       const outputDTO = new GuidelineOutputDTO(guideline)
-      res.status(200).json({ message: "Guideline found", data: outputDTO })
+      res.status(200).json({ message: MESSAGES.GUIDELINE_RETRIEVED_BY_STATUS, data: outputDTO })
     } catch (err) {
       logger.error(
         "GuidelineController - Failed to retrieve guideline by status"
@@ -81,11 +76,11 @@ class GuidelineController {
       if (err.message === "InvalidStatus") {
         res
           .status(400)
-          .json({ error: "Invalid search parameter. Try true or false" })
+          .json({ error: MESSAGES.INVALID_STATUS_PARAMETER })
       } else if (err.message === "GuidelineNotFound") {
-        res.status(404).json({ error: "No guidelines match the given status" })
+        res.status(404).json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_STATUS })
       } else {
-        res.status(500).json({ error: "Error retrieving Guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_GUIDELINE_BY_STATUS })
       }
     }
   }
@@ -97,34 +92,28 @@ class GuidelineController {
       const inputDTO = new GuidelineInputDTO({cg, outbreak, validityPeriod})
       const guideline = await GuidelineService.editByCode(req.params.cg, inputDTO)
       const outputDTO = new GuidelineOutputDTO(guideline)
-      res.status(201).json({ message: "Guideline updated", data: outputDTO })
+      res.status(201).json({ message: MESSAGES.GUIDELINE_UPDATED, data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error updating guideline")
-      if (err.name === "ValidationError") {
-        let errorMessage = "Validation Error:"
-        for (let field in err.errors) {
-          errorMessage += `${err.errors[field].message}`
-        }
-        res.status(400).json({ message: errorMessage.trim() })
-      } else if (err.message === "MissingFields") {
+      if (err.message === "MissingRequiredFields") {
         res.status(400).json({
           error:
-            "Missing required fields. Possible fields for update: cg, outbreak and/or validityPeriod",
+            MESSAGES.MISSING_REQUIRED_FIELDS
         })
       } else if (err.message === "GuidelineNotFound") {
         res
           .status(400)
-          .json({ error: "Guideline not found with the given guideline code" })
+          .json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE })
       } else if (err.message === "OutbreakNotFound") {
         res
           .status(400)
-          .json({ error: "Outbreak not found with the given outbreak code" })
+          .json({ error: MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE })
       } else if (err.code === 11000) {
         res.status(400).json({
-          error: "Duplicate guideline code. Please use unique values.",
+          error: MESSAGES.DUPLICATE_GUIDELINE,
         })
       } else {
-        res.status(500).json({ error: "Error updating guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_UPDATE_GUIDELINE })
       }
     }
   }
@@ -135,19 +124,19 @@ class GuidelineController {
       await GuidelineService.removeExpiredByCode(req.params.cg)
       res
         .status(200)
-        .json({ message: "Guideline deleted", data: req.params.cg })
+        .json({ message: MESSAGES.GUIDELINE_DELETED, data: req.params.cg })
     } catch (err) {
       logger.error("GuidelineController - Error deleting guideline")
       if (err.message === "GuidelineNotFound") {
         res
           .status(400)
-          .json({ error: "Guideline not found with the given code" })
+          .json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE })
       } else if (err.message === "NotExpired") {
         res
           .status(400)
-          .json({ error: "Cannot delete guideline if not expired" })
+          .json({ error: MESSAGES.GUIDELINE_NOT_EXPIRED })
       } else {
-        res.status(500).json({ error: "Error deleting Guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_DELETE_GUIDELINE })
       }
     }
   }
@@ -158,15 +147,15 @@ class GuidelineController {
       await GuidelineService.removeByCode(req.params.cg)
       res
         .status(200)
-        .json({ message: "Guideline deleted", data: req.params.cg })
+        .json({ message: MESSAGES.GUIDELINE_DELETED, data: req.params.cg })
     } catch (err) {
       logger.error("GuidelineController - Error deleting guideline")
       if (err.message === "GuidelineNotFound") {
         res
           .status(400)
-          .json({ error: "Guideline not found with the given code" })
+          .json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE })
       } else {
-        res.status(500).json({ error: "Error deleting Guideline" })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_DELETE_GUIDELINE })
       }
     }
   }
