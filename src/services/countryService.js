@@ -1,11 +1,11 @@
 import logger from "../logger.js"
 import Country from "../models/countryModel.js"
+import Zone from "../models/zoneModel.js"
+import { getCountryIso2 } from "../utils/countriesData.js"
 
 class CountryService {
-  async save(data) {
+  async save(country) {
     logger.debug("CountryService - save")
-
-    const country = new Country(data)
 
     await country.save()
   }
@@ -13,32 +13,40 @@ class CountryService {
   async list(data) {
     logger.debug("CountryService - list")
 
-    const countries = await Country.find(data ?? data).exec()
+    const countries = await Country.find(data ?? data).populate({
+      path: "zone",
+      select: "cz name -_id",
+    })
 
     if (countries.length === 0) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
-
-      logger.error("CountryService - list - ", error.message)
-      throw error
+      throw new Error("CountryNotFound")
     }
 
     return countries
   }
 
-  async update(cc, data) {
+  async update(cc, name, zone) {
     logger.debug("CountryService - update")
 
-    const country = await Country.findOne({ cc }).exec()
+    const newZone = await Zone.findOne({ cz: zone })
+    if (!newZone) {
+      throw new Error("ZoneNotFound")
+    }
 
-    if (country.length === 0) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
+    const countryISOCode = getCountryIso2(name)
+    if (!countryISOCode || !name) {
+      throw new Error("InvalidCountryName")
+    }
 
-      logger.error("CountryService - update - ", error.message)
-      throw error
+    const newZoneId = newZone._id?.toString()
+    const newCc = countryISOCode
+
+    const data = { cc: newCc, name: name, zone: newZoneId }
+
+    const country = await Country.findOne({ cc })
+
+    if (!country) {
+      throw new Error("CountryNotFound")
     }
 
     Object.assign(country, data)
@@ -48,15 +56,10 @@ class CountryService {
   async delete(cc) {
     logger.debug("CountryService - delete")
 
-    const country = await Country.findOne({ cc }).exec()
+    const country = await Country.findOne({ cc })
 
-    if (country.length === 0) {
-      const error = new Error()
-      error.code = "NOT_FOUND"
-      error.message = "Country Not Found"
-
-      logger.error("CountryService - delete - ", error.message)
-      throw error
+    if (!country) {
+      throw new Error("CountryNotFound")
     }
 
     await country.deleteOne()

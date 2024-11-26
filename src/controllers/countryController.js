@@ -1,61 +1,67 @@
 import logger from "../logger.js"
 import CountryService from "../services/countryService.js"
+import CountryInputDTO from "../DTO/countryInputDTO.js"
+import CountryOutputDTO from "../DTO/countryOutputDTO.js"
+import { MESSAGES } from "../utils/responseMessages.js"
 
 class CountryController {
   async create(req, res) {
-    logger.info("POST: /api/countries - Request body: ", {
-      body: JSON.stringify(req.body),
-    })
+    logger.info("POST: /api/countries")
     try {
-      await CountryService.save(req.body)
+      const { name, zone } = req.body
+      const countryInputDTO = new CountryInputDTO(name, zone)
+      const country = await countryInputDTO.toCountry()
+
+      await CountryService.save(country)
       res.status(201).json({
-        sucess: true,
-        message: "Country created successfully",
-        data: req.body,
+        message: MESSAGES.COUNTRY_CREATED,
+        data: country,
       })
     } catch (err) {
+      logger.error("CountryController - Error creating country - ", err)
+
       if (err.name === "ValidationError") {
-        let errorMessage = "Validation Error: "
+        let errorMessage = `${MESSAGES.VALIDATION_ERROR}: `
         for (let field in err.errors) {
           errorMessage += `${err.errors[field].message}`
         }
-        res
-          .status(400)
-          .json({ sucess: false, message: errorMessage.trim(), error: err })
+        res.status(400).json({ message: errorMessage.trim(), error: err })
       } else if (err.code === 11000) {
         res.status(400).json({
-          sucess: false,
-          message:
-            "Duplicate country code or country name. Please use unique values.",
+          message: MESSAGES.DUPLICATE_COUNTRY,
           error: err,
+        })
+      } else if (err.message === "InvalidCountryName") {
+        res.status(400).json({
+          error: MESSAGES.INVALID_COUNTRY_NAME,
+        })
+      } else if (err.message === "ZoneNotFound") {
+        res.status(400).json({
+          error: MESSAGES.ZONE_NOT_FOUND,
         })
       } else {
         res.status(500).json({
-          sucess: false,
-          message: "Failed to create country",
-          error: err,
+          message: MESSAGES.FAILED_TO_CREATE_COUNTRY,
+          error: err.message,
         })
       }
     }
   }
 
   async getAll(req, res) {
-    logger.info("GET: /api/countries - Request body: ", {
-      body: JSON.stringify(req.body),
-    })
+    logger.info("GET: /api/countries")
 
     try {
-      const countries = await CountryService.list()
+      const countriesFound = await CountryService.list()
+      const countries = CountryOutputDTO.fromCountry(countriesFound)
       res.status(200).json({
-        sucess: true,
-        message: "Countries retrieved successfully",
+        message: MESSAGES.COUNTRIES_RETRIEVED,
         data: countries,
       })
     } catch (err) {
       logger.error("CountryController - Error retrieving countries - ", err)
-      res.status(err.status || 500).json({
-        sucess: false,
-        message: "Failed to retrieve countries",
+      res.status(500).json({
+        message: MESSAGES.FAILED_TO_RETRIEVE_COUNTRIES,
         error: err,
       })
     }
@@ -65,10 +71,11 @@ class CountryController {
     const { cc } = req.params
     logger.info(`GET: /api/countries/cc/${cc}`)
     try {
-      const country = await CountryService.list({ cc })
+      const countryFound = await CountryService.list({ cc })
+      const country = CountryOutputDTO.fromCountry(countryFound)
+
       res.status(200).json({
-        sucess: true,
-        message: "Country retrieved by code",
+        message: MESSAGES.COUNTRY_RETRIEVED_BY_CODE,
         data: country,
       })
     } catch (err) {
@@ -76,11 +83,15 @@ class CountryController {
         "CountryController - Error retrieving country by code - ",
         err
       )
-      res.status(err.code === "NOT_FOUND" ? 404 : 500).json({
-        sucess: false,
-        message: "Failed to retrieve country by code",
-        error: err,
-      })
+
+      if (err.message === "CountryNotFound") {
+        res.status(404).json({ error: MESSAGES.COUNTRY_NOT_FOUND })
+      } else {
+        res.status(500).json({
+          message: MESSAGES.FAILED_TO_RETRIEVE_COUNTRY_BY_CODE,
+          error: err,
+        })
+      }
     }
   }
 
@@ -88,12 +99,12 @@ class CountryController {
     const { name: countryName } = req.params
     logger.info(`GET: /api/countries/name/${countryName}`)
     try {
-      const country = await CountryService.list({
+      const countryFound = await CountryService.list({
         name: countryName,
       })
+      const country = CountryOutputDTO.fromCountry(countryFound)
       res.status(200).json({
-        sucess: true,
-        message: "Country retrieved by name",
+        message: MESSAGES.COUNTRY_RETRIEVED_BY_NAME,
         data: country,
       })
     } catch (err) {
@@ -101,9 +112,8 @@ class CountryController {
         "CountryController - Error retrieving country by name - ",
         err
       )
-      res.status(err.status || 500).json({
-        sucess: false,
-        message: "Failed to retrieve country by name",
+      res.status(500).json({
+        message: MESSAGES.FAILED_TO_RETRIEVE_COUNTRY_BY_NAME,
         error: err,
       })
     }
@@ -111,24 +121,29 @@ class CountryController {
 
   async update(req, res) {
     const { cc } = req.params
-    logger.info(`PUT: /api/countries/${cc} - Request body: `, {
-      body: JSON.stringify(req.body),
-    })
+    logger.info(`PUT: /api/countries/${cc}`)
 
     try {
-      const updatedCountry = await CountryService.update(cc, req.body)
+      const { name, zone } = req.body
+      const updatedCountry = await CountryService.update(cc, name, zone)
+      const updatedCountryDTO = CountryOutputDTO.fromCountry([updatedCountry])
+
       res.status(200).json({
-        sucess: true,
-        message: "Country updated successfully",
-        data: updatedCountry,
+        message: MESSAGES.COUNTRY_UPDATED,
+        data: updatedCountryDTO,
       })
     } catch (err) {
-      logger.error("CountryController - Error updating country - ", err)
-      res.status(err.status || 500).json({
-        sucess: false,
-        message: "Failed to update country",
-        error: err,
-      })
+      if (err.message === "CountryNotFound") {
+        res.status(404).json({ error: MESSAGES.COUNTRY_NOT_FOUND })
+      } else if (err.message === "ZoneNotFound") {
+        res.status(400).json({ error: MESSAGES.ZONE_NOT_FOUND })
+      } else {
+        logger.error("CountryController - Error updating country - ", err)
+        res.status(400).json({
+          message: MESSAGES.FAILED_TO_UPDATE_COUNTRY,
+          error: err,
+        })
+      }
     }
   }
 
@@ -138,17 +153,20 @@ class CountryController {
     try {
       const deletedCountry = await CountryService.delete(cc)
       res.status(200).json({
-        sucess: true,
-        message: "Country deleted successfully",
+        message: MESSAGES.COUNTRY_DELETED,
         data: deletedCountry,
       })
     } catch (err) {
       logger.error("CountryController - Error deleting country - ", err)
-      res.status(err.status || 500).json({
-        sucess: false,
-        message: "Failed to delete country",
-        error: err,
-      })
+
+      if (err.message === "CountryNotFound") {
+        res.status(404).json({ error: MESSAGES.COUNTRY_NOT_FOUND })
+      } else {
+        res.status(500).json({
+          message: MESSAGES.FAILED_TO_DELETE_COUNTRY,
+          error: err,
+        })
+      }
     }
   }
 }

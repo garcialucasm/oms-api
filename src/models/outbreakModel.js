@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const OutbreakSchema = new Schema(
   {
@@ -11,12 +11,12 @@ const OutbreakSchema = new Schema(
         "Outbreak code must start with 1 numerical character and end with 1 letter.",
       ],
     },
-    cv: {
+    virus: {
       type: Schema.Types.ObjectId,
       ref: "Virus",
       required: true,
     },
-    cz: {
+    zone: {
       type: Schema.Types.ObjectId,
       ref: "Zone",
       required: true,
@@ -26,25 +26,25 @@ const OutbreakSchema = new Schema(
       required: true,
       validate: {
         validator: function (v) {
-          return v <= Date.now();
+          return v <= Date.now()
         },
         message: "Date of detection cannot be after the current date.",
       },
     },
     endDate: {
-        type: Date,
-        default: null,
+      type: Date,
+      default: null,
     },
     condition: {
-        type: String,
-        default: "active",
-        match: [
-          /^(active|occurred)$/,
-          "The value of condition must be either 'active' or 'occurred'.",
-        ]
-    }
+      type: String,
+      default: "active",
+      match: [
+        /^(active|occurred)$/,
+        "The value of condition must be either 'active' or 'occurred'.",
+      ],
+    },
   },
-  { collection: "outbreaks" }
-);
+  { collection: "outbreaks", timestamps: true }
+)
 
-export default model("Outbreak", OutbreakSchema);
+export default model("Outbreak", OutbreakSchema)

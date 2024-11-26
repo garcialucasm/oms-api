@@ -1,42 +1,52 @@
 import Virus from "../models/virusModel.js"
+import Outbreak from "../models/outbreakModel.js"
 
 class VirusService {
-  async create(data) {
-    const {cv, name} = data;
-    if (!cv || !name) {
-      throw new Error("MissingRequiredFields");
-    }
-    const virus = new Virus(data)
+  async create(virus) {
     await virus.save()
+    return virus
   }
 
   async getAll() {
-    return await Virus.find().exec()
+    const viruses = await Virus.find().exec()
+    if (viruses.length === 0) {
+      throw new Error("VirusNotFound")
+    }
+    return viruses
   }
 
-  async list(data) {
-    return await Virus.findOne(data).exec()
-  }
-
-  async update(cv, data) {
-    const virus = await Virus.findOne({ cv: cv })
+  async getOne(filter) {
+    const virus = await Virus.findOne(filter).exec()
     if (!virus) {
-        const error = new Error;
-        error.name = "VirusNotFound";
-        throw error;
-      }
-    Object.assign(virus, data);
-    await virus.save();
-    return virus;
+      throw new Error("VirusNotFound")
+    }
+    return virus
+  }
+
+  async update(code, data) {
+    const virus = await Virus.findOne({ cv: code })
+    if (!virus) {
+      throw new Error("VirusNotFound")
+    }
+
+    virus.cv = data.cv || virus.cv
+    virus.name = data.name || virus.name
+
+    await virus.save()
+    return virus
   }
 
   async delete(cv) {
-    const virus = await Virus.findOne({ cv: cv }).exec()
+    const virus = await Virus.findOne({ cv }).exec()
     if (!virus) {
-      const error = new Error()
-      error.name = "VirusNotFound"
-      throw error
+      throw new Error("VirusNotFound")
     }
+
+    const outbreak = await Outbreak.findOne({ virus: virus._id })
+    if (outbreak) {
+      throw new Error("OutbreakAssociated")
+    }
+
     await virus.deleteOne()
   }
 }

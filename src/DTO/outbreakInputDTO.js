@@ -3,34 +3,58 @@ import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
 
 class OutbreakInputDTO {
-  constructor(co, cv, cz, startDate, endDate, condition) {
+  constructor({ co, virus, zone, startDate, endDate, condition }) {
+    if (!co || !virus || !zone || !startDate) {
+      throw new Error("MissingRequiredFields")
+    }
+
     this.co = co
-    this.cv = cv
-    this.cz = cz
-    this.startDate = startDate
-    this.endDate = endDate
-    this.condition = condition
+    this.virus = virus
+    this.zone = zone
+    this.startDate = new Date(startDate)
+    this.endDate = endDate ? new Date(endDate) : null
+    this.condition = condition || (this.endDate ? "occurred" : "active")
+
+    if (isNaN(this.startDate.getTime())) {
+      throw new Error("InvalidStartDateFormat")
+    }
+
+    if (this.startDate > Date.now()) {
+      throw new Error("FutureStartDate")
+    }
+
+    if (this.endDate && isNaN(this.endDate.getTime())) {
+      throw new Error("InvalidEndDateFormat")
+    }
+
+    if (this.endDate && this.endDate < this.startDate) {
+      throw new Error("EndDateBeforeStartDate")
+    }
+
+    if (this.endDate && this.endDate > Date.now()) {
+      throw new Error("FutureEndDate")
+    }
+
+    if (this.condition !== "active" && this.condition !== "occurred") {
+      throw new Error("InvalidParameters")
+    }
   }
 
   async toOutbreak() {
-    const outbreakVirus = await Virus.findOne({ cv: this.cv })
-    const outbreakZone = await Zone.findOne({ cz: this.cz })
-
-    if (!outbreakVirus) {
-      const error = new Error("Virus not found")
-      error.name = "VirusNotFound"
-      throw error
+    const virusDocument = await Virus.findOne({ cv: this.virus })
+    if (!virusDocument) {
+      throw new Error("VirusNotFound")
     }
-    if (!outbreakZone) {
-      const error = new Error("Zone not found")
-      error.name = "ZoneNotFound"
-      throw error
+
+    const zoneDocument = await Zone.findOne({ cz: this.zone })
+    if (!zoneDocument) {
+      throw new Error("ZoneNotFound")
     }
 
     return new Outbreak({
       co: this.co,
-      cv: outbreakVirus._id,
-      cz: outbreakZone._id,
+      virus: virusDocument._id,
+      zone: zoneDocument._id,
       startDate: this.startDate,
       endDate: this.endDate,
       condition: this.condition,

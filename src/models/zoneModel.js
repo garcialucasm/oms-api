@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from "mongoose"
 
 const ZoneSchema = new Schema(
   {
@@ -15,7 +15,19 @@ const ZoneSchema = new Schema(
     },
     name: String,
   },
-  { collection: "zones" }
-);
+  {
+    collection: "zones",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true,
+    id: false,
+  }
+)
 
-export default model("Zone", ZoneSchema);
+ZoneSchema.virtual("countries", {
+  ref: "Country",
+  localField: "_id",
+  foreignField: "zone",
+})
+
+export default model("Zone", ZoneSchema)
