@@ -15,7 +15,13 @@ class GuidelineController {
       res.status(201).json({ message: MESSAGES.GUIDELINE_CREATED, data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error creating guideline")
-      if (err.message === "MissingRequiredFields") {
+      if (err.name === "ValidationError") {
+        let errorMessage = `${MESSAGES.VALIDATION_ERROR}: `
+        for (let field in err.errors) {
+          errorMessage += `${err.errors[field].message}`
+        }
+        res.status(400).json({ message: errorMessage.trim(), error: err })
+      } else if (err.message === "MissingRequiredFields") {
         res.status(400).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
       } else if (err.message === "OutbreakNotFound") {
         res.status(400).json({
@@ -95,7 +101,13 @@ class GuidelineController {
       res.status(201).json({ message: MESSAGES.GUIDELINE_UPDATED, data: outputDTO })
     } catch (err) {
       logger.error("GuidelineController - Error updating guideline")
-      if (err.message === "MissingRequiredFields") {
+      if (err.name === "ValidationError") {
+        let errorMessage = `${MESSAGES.VALIDATION_ERROR}: `
+        for (let field in err.errors) {
+          errorMessage += `${err.errors[field].message}`
+        }
+        res.status(400).json({ message: errorMessage.trim(), error: err })
+      } else if (err.message === "MissingRequiredFields") {
         res.status(400).json({
           error:
             MESSAGES.MISSING_REQUIRED_FIELDS

@@ -57,7 +57,7 @@ class GuidelineService {
 
     await guideline.save()
     const populatedGuideline = await Guideline.findOne({
-      outbreak: guideline.outbreak,
+      cg: guideline.cg,
     }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
 
     return populatedGuideline
