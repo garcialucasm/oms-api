@@ -1,43 +1,16 @@
-import mongoose from "mongoose"
-import dotenv from "dotenv"
 import request from "supertest"
 
-import { app, server } from "../src/app.js"
+import { AdminToken } from "./setup/testSetup.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-
-dotenv.config()
-
-let authToken
+import { app } from "../src/app.js"
 
 describe("Virus API Tests with Authentication", () => {
-  beforeAll(async () => {
-    await mongoose.connect(process.env.DB_TEST_CONNECTION_STRING, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-
-    const adminUser = { username: "admin", password: "testadmin123" }
-
-    const loginResponse = await request(app)
-      .post("/api/auth/login")
-      .send(adminUser)
-    expect(loginResponse.status).toBe(200)
-    authToken = loginResponse.body.userToken
-  })
-
-  afterAll(async () => {
-    await mongoose.connection.dropDatabase()
-    await mongoose.connection.close()
-    server.close()
-  })
-
   describe("POST /api/viruses", () => {
     test("should create a new virus", async () => {
       const newVirus = { cv: "AB12", name: "Influenza" }
-
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newVirus)
       expect(response.status).toBe(201)
       expect(response.body.data.cv).toBe("AB12")
@@ -49,13 +22,13 @@ describe("Virus API Tests with Authentication", () => {
 
       const firstResponse = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newVirus)
       expect(firstResponse.status).toBe(201)
 
       const secondResponse = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newVirus)
       expect(secondResponse.status).toBe(400)
       expect(secondResponse.body.error).toBe(MESSAGES.DUPLICATE_VIRUS)
@@ -66,7 +39,7 @@ describe("Virus API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidVirus)
       expect(response.status).toBe(400)
       expect(response.body.error.message).toContain(
@@ -79,7 +52,7 @@ describe("Virus API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidVirus)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -90,7 +63,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should return all viruses", async () => {
       const response = await request(app)
         .get("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
@@ -101,7 +74,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should retrieve a virus by its name", async () => {
       const response = await request(app)
         .get("/api/viruses/name/Influenza")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.data.name).toBe("Influenza")
@@ -110,7 +83,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should return 404 if the virus is not found by name", async () => {
       const response = await request(app)
         .get("/api/viruses/name/UnknownVirus")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_NAME)
@@ -121,7 +94,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should retrieve a virus by its code", async () => {
       const response = await request(app)
         .get("/api/viruses/cv/AB12")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.data.cv).toBe("AB12")
@@ -130,7 +103,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should return 404 if the virus is not found by code", async () => {
       const response = await request(app)
         .get("/api/viruses/cv/ZZ99")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
@@ -143,7 +116,7 @@ describe("Virus API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/viruses/AB12")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(updatedVirusData)
 
       expect(response.status).toBe(200)
@@ -155,7 +128,7 @@ describe("Virus API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/viruses/ZZ99")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(updatedVirusData)
 
       expect(response.status).toBe(404)
@@ -167,7 +140,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should delete a virus by its code", async () => {
       const response = await request(app)
         .delete("/api/viruses/AA11")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.VIRUS_DELETED)
@@ -176,7 +149,7 @@ describe("Virus API Tests with Authentication", () => {
     test("should return 404 if virus to delete is not found", async () => {
       const response = await request(app)
         .delete("/api/viruses/ZZ99")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
