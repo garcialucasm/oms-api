@@ -92,5 +92,6 @@ export const MESSAGES = {
   /* ------------------------- Common Error messages ------------------------- */
   MISSING_REQUIRED_FIELDS: "Missing required fields.",
   VALIDATION_ERROR: "Validation Error",
+  AUTH_REQUIRED: "Authentication required for this action",
   /* -------------------------------------------------------------------------- */
 }
