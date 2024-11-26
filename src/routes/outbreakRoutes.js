@@ -12,7 +12,7 @@ router.get("/co/:co",verifyToken, OutbreakController.getByCode)
 router.get("/cv/:cv",verifyToken, OutbreakController.getByVirusCode)
 router.get("/cz/:cz",verifyToken, OutbreakController.getByZoneCode)
 router.put("/co/:co",verifyToken, OutbreakController.update)
-router.put("/:cz/:cv",verifyToken, OutbreakController.updateByZoneCodeVirusCode)
+router.put("/cz/cv/:cz/:cv",verifyToken, OutbreakController.updateByZoneCodeVirusCode)
 router.delete("/:co",verifyToken, OutbreakController.delete)
 
 export { router as outbreakRoutes }

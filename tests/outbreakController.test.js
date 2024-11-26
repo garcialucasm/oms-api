@@ -1,4 +1,3 @@
-import mongoose from "mongoose"
 import dotenv from "dotenv"
 import request from "supertest"
 
@@ -8,69 +7,64 @@ import Virus from "../src/models/virusModel.js"
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
+import { AdminToken } from "./setup/testSetup.js"
 
 dotenv.config()
 
-let authToken
-let zone
-let virus
-
 describe("Outbreak API Tests with Authentication", () => {
-  beforeAll(async () => {
-    await mongoose.connect(process.env.DB_TEST_CONNECTION_STRING, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
+  let zone
+  let virus
 
-    /* ------------------------- Create a new zone first ------------------------ */
+  beforeAll(async () => {
+    /* ---------------------- Create prerequisites for test --------------------- */
     const newZone = { cz: "A2", name: "ZonaA2" }
-    const zoneResponse = await request(app).post("/api/zones").send(newZone)
+    const zoneResponse = await request(app)
+      .post("/api/zones")
+      .set("Authorization", `Bearer ${AdminToken}`)
+      .send(newZone)
     expect(zoneResponse.status).toBe(201)
     zone = zoneResponse.body.data.cz
 
     const newVirus = { cv: "AB12", name: "ValidVirus" }
-    const virusResponse = await request(app).post("/api/viruses").send(newVirus)
+    const virusResponse = await request(app)
+      .post("/api/viruses")
+      .set("Authorization", `Bearer ${AdminToken}`)
+      .send(newVirus)
     expect(virusResponse.status).toBe(201)
+
     virus = virusResponse.body.data.cz
 
     const newZone2 = { cz: "B2", name: "ZonaB2" }
-    const zoneResponse2 = await request(app).post("/api/zones").send(newZone2)
+    const zoneResponse2 = await request(app)
+      .post("/api/zones")
+      .set("Authorization", `Bearer ${AdminToken}`)
+      .send(newZone2)
     expect(zoneResponse2.status).toBe(201)
     zone = zoneResponse2.body.data.cz
 
     const newVirus2 = { cv: "XZ12", name: "VirusXZ" }
     const virusResponse2 = await request(app)
       .post("/api/viruses")
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(newVirus2)
     expect(virusResponse2.status).toBe(201)
     virus = virusResponse2.body.data.cz
 
     const newZone3 = { cz: "C2", name: "ZonaC2" }
-    const zoneResponse3 = await request(app).post("/api/zones").send(newZone3)
+    const zoneResponse3 = await request(app)
+      .post("/api/zones")
+      .set("Authorization", `Bearer ${AdminToken}`)
+      .send(newZone3)
     expect(zoneResponse3.status).toBe(201)
     zone = zoneResponse3.body.data.cz
 
     const newVirus3 = { cv: "VV12", name: "VirusVV" }
     const virusResponse3 = await request(app)
       .post("/api/viruses")
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(newVirus3)
     expect(virusResponse3.status).toBe(201)
     virus = virusResponse3.body.data.cz
-    /* -------------------------------------------------------------------------- */
-
-    const adminUser = { username: "admin", password: "testadmin123" }
-
-    const loginResponse = await request(app)
-      .post("/api/auth/login")
-      .send(adminUser)
-    expect(loginResponse.status).toBe(200)
-    authToken = loginResponse.body.userToken
-  })
-  })
-  afterAll(async () => {
-    await mongoose.connection.dropDatabase()
-    await mongoose.connection.close()
-    server.close()
   })
 
   describe("GET /api/outbreaks", () => {
@@ -146,7 +140,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(201)
       expect(response.body.data.co).toBe("8X")
@@ -161,7 +155,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.DUPLICATE_OUTBREAK)
@@ -176,7 +170,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_CODE_VALIDATION_ERROR)
@@ -191,7 +185,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
@@ -206,7 +200,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -217,7 +211,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -232,7 +226,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
@@ -248,7 +242,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
@@ -264,7 +258,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_ALREADY_EXISTS)
@@ -279,7 +273,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
@@ -295,7 +289,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
@@ -311,7 +305,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
@@ -328,7 +322,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(201)
       expect(response.body.data.condition).toBe("occurred")
@@ -411,6 +405,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/8A")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -435,6 +430,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -458,6 +454,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -488,6 +485,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -511,12 +509,14 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
       expect(response.body.data.endDate).toBe("2013-10-09T23:00:00.000Z")
     })
-    test("should find outbreak with updated startDate", async () => {
+
+    test("should find outbreak with updated endDate", async () => {
       const response = await request(app).get("/api/outbreaks/co/1Z")
 
       expect(response.status).toBe(200)
@@ -524,14 +524,16 @@ describe("Outbreak API Tests with Authentication", () => {
     })
 
     test("should not update an outbreak that doesn't exist", async () => {
-        const invalidOutbreak = {
-            co: "1Z",
-            virus: "XZ12",
-            zone: "C2",
-            startDate: "2011/10/10",
-            endDate: "2013/10/10",
-          }
-        const response = await request(app).put("/api/outbreaks/co/NoCo")
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "XZ12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2013/10/10",
+      }
+      const response = await request(app)
+        .put("/api/outbreaks/co/NoCo")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
 
       expect(response.status).toBe(404)
@@ -543,7 +545,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -560,164 +562,195 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
     })
 
     test("should not find the inexistent zone code", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "InvalidZone",
-          startDate: "2011/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(404)
-        expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
-      })
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "InvalidZone",
+        startDate: "2011/10/10",
+        endDate: "2013/10/10",
+      }
 
-      test("should not update outbreak to invalid startDate format", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "InvalidZone",
-          startDate: "abc",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
+    })
 
-      test("should not update outbreak to invalid endDate format", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "abc",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
-      })
+    test("should not update outbreak to invalid startDate format", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "InvalidZone",
+        startDate: "abc",
+        endDate: "2013/10/10",
+      }
 
-      test("should not update outbreak to future startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2056/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
+    })
 
-      test("should not update outbreak to future startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2056/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
-      })
+    test("should not update outbreak to invalid endDate format", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "abc",
+      }
 
-      test("should not update outbreak because endDate before startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2009/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/co/1Z")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
+    })
+
+    test("should not update outbreak to future startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2056/10/10",
+        endDate: "2013/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
+    })
+
+    test("should not update outbreak to future startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2056/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
+    })
+
+    test("should not update outbreak because endDate before startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2009/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/co/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
+    })
   })
+
   describe("DELETE /api/outbreaks/:co", () => {
     test("should not delete an inexistent outbreak", async () => {
-      const response = await request(app).delete("/api/outbreaks/INVALID")
+      const response = await request(app)
+        .delete("/api/outbreaks/INVALID")
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
     })
 
     test("should not delete outbreak when it is linked to a guideline", async () => {
-        const virusDelete = await Virus.create({
-            cv: "CC17",
-            name:"ToBeDeleted"
-        })
-        
-        const zoneDelete = await Zone.create({
-            cz: "M2",
-            name:"ToBeDeleted"
-        })
-        
-        const outbreakDelete = await Outbreak.create({
-            co: "6P",
-            virus: virusDelete._id,
-            zone: zoneDelete._id,
-            startDate:"2020/10/10"
-        })
-        
-        await Guideline.create({
-            cg: "11ZZ",
-            outbreak: outbreakDelete._id,
-            validityPeriod: 10
-        })
-        const response = await request(app).delete("/api/outbreaks/6P")
+      const virusToDelete = {
+        cv: "CC17",
+        name: "ToBeDeleted",
+      }
+
+      const virusResponse = await request(app)
+        .post("/api/viruses")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(virusToDelete)
+      expect(virusResponse.status).toBe(201)
+
+      const newZone = { cz: "M2", name: "ToBeDeleted" }
+      const zoneResponse = await request(app)
+        .post("/api/zones")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(newZone)
+      expect(zoneResponse.status).toBe(201)
+
+      const newOutbreak = {
+        co: "6P",
+        virus: "CC17",
+        zone: "M2",
+        startDate: "2020/10/10",
+      }
+
+      const outbreakResponse = await request(app)
+        .post("/api/outbreaks")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(newOutbreak)
+      expect(outbreakResponse.status).toBe(201)
+
+      const newGuideline = {
+        cg: "11ZZ",
+        outbreak: "6P",
+        validityPeriod: 10,
+      }
+
+      const guidelineResponse = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(newGuideline)
+      expect(guidelineResponse.status).toBe(201)
+
+      await Guideline.create()
+      const response = await request(app)
+        .delete("/api/outbreaks/6P")
+        .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(400)
-      expect(response.body.error).toBe(MESSAGES.CANNOT_DELETE_GUIDELINES_ASSOCIATED)
+      expect(response.body.error).toBe(
+        MESSAGES.CANNOT_DELETE_GUIDELINES_ASSOCIATED
+      )
     })
 
     test("should delete outbreak", async () => {
-        const response = await request(app).delete("/api/outbreaks/1Z")
-  
-        expect(response.status).toBe(200)
-        expect(response.body.message).toBe(MESSAGES.OUTBREAK_DELETED)
-      })
+      const response = await request(app)
+        .delete("/api/outbreaks/1Z")
+        .set("Authorization", `Bearer ${AdminToken}`)
 
-      test("should not find deleted outbreak", async () => {
-        const response = await request(app).get("/api/outbreaks/co/1Z")
-  
-        expect(response.status).toBe(404)
-        expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
-      })   
+      expect(response.status).toBe(200)
+      expect(response.body.message).toBe(MESSAGES.OUTBREAK_DELETED)
+    })
+
+    test("should not find deleted outbreak", async () => {
+      const response = await request(app).get("/api/outbreaks/co/1Z")
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
+    })
   })
   describe("PUT /api/outbreaks/cz/cv/cz:/cv:", () => {
     test("should update an existing outbreak's code", async () => {
@@ -725,11 +758,12 @@ describe("Outbreak API Tests with Authentication", () => {
         co: "7K",
         virus: "CC17",
         zone: "M2",
-        startDate: "2010/10/10"
+        startDate: "2010/10/10",
       }
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/CC17")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -754,6 +788,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/CC17")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -777,6 +812,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -800,6 +836,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -823,6 +860,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -840,7 +878,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -857,145 +895,146 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${AdminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
     })
 
     test("should not update to inexistent zone code", async () => {
-        const invalidOutbreak = {
-          co: "7K",
-          virus: "VV12",
-          zone: "InvalidZone",
-          startDate: "2011/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(404)
-        expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
-      })
+      const invalidOutbreak = {
+        co: "7K",
+        virus: "VV12",
+        zone: "InvalidZone",
+        startDate: "2011/10/10",
+        endDate: "2013/10/10",
+      }
 
-      test("should not update outbreak to invalid startDate format", async () => {
-        const invalidOutbreak = {
-          co: "7K",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "abc",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
+    })
 
-      test("should not update outbreak to invalid endDate format", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "abc",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
-      })
+    test("should not update outbreak to invalid startDate format", async () => {
+      const invalidOutbreak = {
+        co: "7K",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "abc",
+        endDate: "2013/10/10",
+      }
 
-      test("should not update outbreak to future startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2056/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
+    })
 
-      test("should not update outbreak to future startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2056/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
-      })
+    test("should not update outbreak to invalid endDate format", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "abc",
+      }
 
-      test("should not update outbreak because endDate before startDate", async () => {
-        const invalidOutbreak = {
-          co: "1Z",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2009/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(400)
-        expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
+    })
 
-      test("should not find inexistent virus code", async () => {
-        const invalidOutbreak = {
-          co: "7K",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/C2/INVALID")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(404)
-        expect(response.body.error).toBe(MESSAGES.VIRUS_SEARCHED_NOT_FOUND)
-      })
+    test("should not update outbreak to future startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2056/10/10",
+        endDate: "2013/10/10",
+      }
 
-      test("should not find inexistent zone code", async () => {
-        const invalidOutbreak = {
-          co: "7K",
-          virus: "VV12",
-          zone: "C2",
-          startDate: "2011/10/10",
-          endDate: "2013/10/10",
-        }
-  
-        const response = await request(app)
-          .put("/api/outbreaks/cz/cv/INVALID/VV12")
-          .set("Authorization", `Bearer ${authToken}`)
-          .send(invalidOutbreak)
-        expect(response.status).toBe(404)
-        expect(response.body.error).toBe(MESSAGES.ZONE_SEARCHED_NOT_FOUND)
-      })
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
+    })
+
+    test("should not update outbreak to future startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2056/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
+    })
+
+    test("should not update outbreak because endDate before startDate", async () => {
+      const invalidOutbreak = {
+        co: "1Z",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2009/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
+    })
+
+    test("should not find inexistent virus code", async () => {
+      const invalidOutbreak = {
+        co: "7K",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2013/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/C2/INVALID")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.VIRUS_SEARCHED_NOT_FOUND)
+    })
+
+    test("should not find inexistent zone code", async () => {
+      const invalidOutbreak = {
+        co: "7K",
+        virus: "VV12",
+        zone: "C2",
+        startDate: "2011/10/10",
+        endDate: "2013/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/INVALID/VV12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(invalidOutbreak)
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.ZONE_SEARCHED_NOT_FOUND)
+    })
   })
+})
