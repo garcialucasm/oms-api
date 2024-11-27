@@ -27,13 +27,13 @@ class OutbreakService {
   }
 
   async listByOutbreak(co) {
-    const outbreaks = await Outbreak.find({ co })
+    const outbreak = await Outbreak.findOne({ co:co })
       .populate("virus")
       .populate("zone")
-    if (outbreaks.length === 0) {
+    if (!outbreak) {
       throw new Error("OutbreakNotFound")
     }
-    return outbreaks
+    return outbreak
   }
 
   async listByVirus(cv) {

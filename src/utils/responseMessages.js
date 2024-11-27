@@ -29,7 +29,7 @@ export const MESSAGES = {
   VIRUS_RETRIEVED_BY_NAME: "Virus retrieved by name",
   VIRUS_UPDATED: "Virus updated successfully",
   VIRUS_DELETED: "Virus deleted successfully",
-  VIRUSES_RETRIEVED: "Virues retrieved successfully",
+  VIRUSES_RETRIEVED: "Viruses retrieved successfully",
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Virus Error messages ------------------------- */
@@ -59,11 +59,14 @@ export const MESSAGES = {
   OUTBREAKS_RETRIEVED: "Outbreaks retrieved successfully",
   /* -------------------------------------------------------------------------- */
 
+
   /* ------------------------- Outbreaks Error messages ------------------------- */
+  DUPLICATE_OUTBREAK: "Duplicate outbreak code. Please use a unique value for this field",
   OUTBREAK_ALREADY_EXISTS: "That outbreak already exists.",
   NO_OUTBREAKS_FOUND: "No outbreaks found",
   OUTBREAK_NOT_FOUND_BY_CODE:
     "Outbreak not found with the given outbreak code.",
+  OUTBREAK_CODE_VALIDATION_ERROR:"Validation Error: Outbreak code must start with 1 numerical character and end with 1 letter.",
   OUTBREAK_NOT_FOUND: "Outbreak not found.",
   FAILED_TO_CREATE_OUTBREAK: "Failed to create outbreak",
   FAILED_TO_RETRIEVE_OUTBREAKS: "Failed to retrieve outbreaks",
@@ -84,9 +87,58 @@ export const MESSAGES = {
     "Cannot delete outbreak because it has guidelines associated.",
   /* -------------------------------------------------------------------------- */
 
+  /* ------------------------- Zone Success messages ------------------------- */
+  ZONE_CREATED: "Zone created successfully",
+  ZONE_RETRIEVED: "Zone retrieved successfully",
+  ZONES_RETRIEVED: "Zones retrieved successfully",
+  ZONE_RETRIEVED_BY_NAME: "Zone retrieved by name",
+  ZONE_RETRIEVED_BY_CODE: "Zone retrieved by code",
+  ZONE_UPDATED: "Zone updated successfully",
+  ZONE_DELETED: "Zone deleted successfully",
+  /* -------------------------------------------------------------------------- */
+
   /* ------------------------- Zone Error messages ------------------------- */
+  DUPLICATE_ZONE: "Duplicate zone code or name. Please use unique values for both these fields",
+  FAILED_TO_CREATE_ZONE: "Failed to create zone",
   ZONE_NOT_FOUND_BY_CODE: "Zone not found with the given zone code.",
   ZONE_SEARCHED_NOT_FOUND: "Zone not found with the searched zone code",
+  NO_ZONES_FOUND: "No zones found",
+  ZONE_NOT_FOUND_BY_NAME: "Zone not found with the given zone name",
+  ZONE_NOT_FOUND_BY_CODE: "Zone not found with the given zone code",
+  FAILED_TO_RETRIEVE_ZONES: "Failed to retrieve zones",
+  FAILED_TO_RETRIEVE_ZONE_BY_NAME: "Failed to retrieve zone",
+  FAILED_TO_RETRIEVE_ZONE_BY_CODE: "Failed to retrieve zone",
+  FAILED_TO_UPDATE_ZONE: "Failed to update zone",
+  FAILED_TO_DELETE_ZONE: "Failed to delete zone",
+  CANNOT_DELETE_COUNTRIES_ASSOCIATED:
+    "Cannot delete zone because it has countries associated.",
+    
+  /* -------------------------------------------------------------------------- */
+
+  /* ------------------------- Guideline Success messages ------------------------- */
+  GUIDELINE_CREATED: "Guideline created successfully",
+  GUIDELINES_RETRIEVED: "Guidelines retrieved successfully.",
+  GUIDELINE_RETRIEVED: "Guideline retrieved successfully",
+  GUIDELINE_RETRIEVED_BY_CODE: "Guideline retrieved by code.",
+  GUIDELINES_RETRIEVED_BY_STATUS: "Guidelines retrieved by status",
+  GUIDELINE_UPDATED: "Guideline updated successfully",
+  GUIDELINE_DELETED: "Guideline deleted successfully",
+  /* -------------------------------------------------------------------------- */
+
+  /* ------------------------- Guideline Error messages ------------------------- */
+  DUPLICATE_GUIDELINE: "Duplicate guideline code. Please use unique values",
+  FAILED_TO_CREATE_GUIDELINE: "Failed to create guideline",
+  GUIDELINE_NOT_FOUND_BY_CODE: "Guideline not found with the given guideline code.",
+  GUIDELINE_SEARCHED_NOT_FOUND: "Guideline not found with the searched guideline code",
+  NO_GUIDELINES_FOUND: "No guidelines found",
+  GUIDELINE_NOT_FOUND_BY_STATUS: "Guideline not found with the given guideline status",
+  INVALID_STATUS_PARAMETER: "Invalid search parameter. Try true or false",
+  GUIDELINE_NOT_EXPIRED: "Cannot delete guideline if not expired",
+  FAILED_TO_RETRIEVE_GUIDELINES: "Failed to retrieve guidelines",
+  FAILED_TO_RETRIEVE_GUIDELINE_BY_CODE: "Failed to retrieve guideline",
+  FAILED_TO_RETRIEVE_GUIDELINES_BY_STATUS: "Failed to retrieve guidelineS",
+  FAILED_TO_UPDATE_GUIDELINE: "Failed to update guideline",
+  FAILED_TO_DELETE_GUIDELINE: "Failed to delete guideline",
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Common Error messages ------------------------- */

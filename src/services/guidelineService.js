@@ -1,27 +1,26 @@
 import Guideline from "../models/guidelineModel.js"
-import GuidelineInputDTO from "../DTO/guidelineInputDTO.js"
 import Outbreak from "../models/outbreakModel.js"
 
 class GuidelineService {
-  async save({ cg, outbreak, validityPeriod }) {
-    const guidelineInputDTO = new GuidelineInputDTO(
-      cg,
-      outbreak,
-      validityPeriod
-    )
-    const guideline = await guidelineInputDTO.toGuideline()
-    await guideline.save()
-    return guideline
+  async save(guidelineModel) {
+    await guidelineModel.save()
+    return guidelineModel
   }
   async list() {
-    const guidelines = await Guideline.find().populate("outbreak")
-    if (!guidelines) {
+    const guidelines = await Guideline.find().populate({
+      path: "outbreak",
+      select: "co zone virus condition -_id",
+    })
+    if (guidelines.length === 0) {
       throw new Error("GuidelineNotFound")
     }
     return guidelines
   }
   async listByCode(cg) {
-    const guideline = await Guideline.findOne({ cg: cg }).populate("outbreak")
+    const guideline = await Guideline.findOne({ cg: cg }).populate({
+      path: "outbreak",
+      select: "co zone virus condition -_id",
+    })
     if (!guideline) {
       throw new Error("GuidelineNotFound")
     }
@@ -31,21 +30,17 @@ class GuidelineService {
     if (isExpired != "true" && isExpired != "false") {
       throw new Error("InvalidStatus")
     }
-    const guideline = await Guideline.findOne({
+    const guidelines = await Guideline.find({
       isExpired: isExpired,
-    }).populate("outbreak")
-    if (!guideline) {
+    }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
+    if (guidelines.length === 0) {
       throw new Error("GuidelineNotFound")
     }
-    return guideline
+    return guidelines
   }
 
   async editByCode(code, data) {
     const { cg, outbreak, validityPeriod } = data
-
-    if (!cg && !outbreak && !validityPeriod) {
-      throw new Error("MissingFields")
-    }
     const guideline = await Guideline.findOne({ cg: code })
     if (!guideline) {
       throw new Error("GuidelineNotFound")
@@ -58,12 +53,13 @@ class GuidelineService {
 
     guideline.cg = cg || guideline.cg
     guideline.outbreak = outbreakDoc?._id || guideline.outbreak
-    guideline.validityPeriod = validityPeriod || guideline.validityPeriod
+    validityPeriod !== undefined ? guideline.validityPeriod = validityPeriod : guideline.validityPeriod = guideline.validityPeriod
+    
 
     await guideline.save()
     const populatedGuideline = await Guideline.findOne({
-      outbreak: guideline.outbreak,
-    }).populate("outbreak")
+      cg: guideline.cg,
+    }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
 
     return populatedGuideline
   }
@@ -94,11 +90,11 @@ class GuidelineService {
 
       for (const guideline of guidelines) {
         const expirationDate = new Date(
-          guideline.guidelineDate.getTime() +
+          guideline.createdAt.getTime() +
             guideline.validityPeriod * 24 * 60 * 60 * 1000
         )
 
-        guideline.isExpired = expirationDate < currentDate ? true : false
+        guideline.isExpired = expirationDate <= currentDate ? true : false
         await guideline.save()
       }
       console.log("Validity updated successfully for all guidelines.")
