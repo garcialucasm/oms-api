@@ -29,7 +29,7 @@ export const MESSAGES = {
   VIRUS_RETRIEVED_BY_NAME: "Virus retrieved by name",
   VIRUS_UPDATED: "Virus updated successfully",
   VIRUS_DELETED: "Virus deleted successfully",
-  VIRUSES_RETRIEVED: "Virues retrieved successfully",
+  VIRUSES_RETRIEVED: "Viruses retrieved successfully",
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Virus Error messages ------------------------- */
@@ -59,11 +59,14 @@ export const MESSAGES = {
   OUTBREAKS_RETRIEVED: "Outbreaks retrieved successfully",
   /* -------------------------------------------------------------------------- */
 
+
   /* ------------------------- Outbreaks Error messages ------------------------- */
+  DUPLICATE_OUTBREAK: "Duplicate outbreak code. Please use a unique value for this field",
   OUTBREAK_ALREADY_EXISTS: "That outbreak already exists.",
   NO_OUTBREAKS_FOUND: "No outbreaks found",
   OUTBREAK_NOT_FOUND_BY_CODE:
     "Outbreak not found with the given outbreak code.",
+  OUTBREAK_CODE_VALIDATION_ERROR:"Validation Error: Outbreak code must start with 1 numerical character and end with 1 letter.",
   OUTBREAK_NOT_FOUND: "Outbreak not found.",
   FAILED_TO_CREATE_OUTBREAK: "Failed to create outbreak",
   FAILED_TO_RETRIEVE_OUTBREAKS: "Failed to retrieve outbreaks",

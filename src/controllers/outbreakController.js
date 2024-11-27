@@ -15,37 +15,51 @@ class OutbreakController {
       res
         .status(201)
         .json({ message: MESSAGES.OUTBREAK_CREATED, data: outputDTO })
-    } catch (error) {
-      if (error.message === "VirusNotFound") {
+    } catch (err) {
+      if (err.name === "ValidationError") {
+        let errorMessage = "Validation Error: "
+        for (let field in err.errors) {
+          errorMessage += `${err.errors[field].message}`
+        }
+        return res.status(400).json({ error: errorMessage.trim() })
+      }
+      if (err.message === "MissingRequiredFields") {
+        return res.status(404).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
+      }
+      if (err.message === "VirusNotFound") {
         return res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
       }
-      if (error.message === "ZoneNotFound") {
+      if (err.message === "ZoneNotFound") {
         return res.status(404).json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
       }
-      if (error.message === "OutbreakAlreadyExists") {
+      if (err.message === "OutbreakAlreadyExists") {
         return res.status(400).json({ error: MESSAGES.OUTBREAK_ALREADY_EXISTS })
       }
-      if (error.message === "InvalidStartDateFormat") {
+      if (err.message === "InvalidStartDateFormat") {
         return res
           .status(400)
           .json({ error: MESSAGES.INVALID_STARTDATE_FORMAT })
       }
-      if (error.message === "InvalidEndDateFormat") {
+      if (err.message === "InvalidEndDateFormat") {
         return res.status(400).json({ error: MESSAGES.INVALID_ENDDATE_FORMAT })
       }
-      if (error.message === "FutureStartDate") {
+      if (err.message === "FutureStartDate") {
         return res.status(400).json({ error: MESSAGES.FUTURE_STARTDATE })
       }
-      if (error.message === "EndDateBeforeStartDate") {
+      if (err.message === "EndDateBeforeStartDate") {
         return res
           .status(400)
           .json({ error: MESSAGES.ENDDATE_BEFORE_STARTDATE })
       }
-      if (error.message === "FutureEndDate") {
+      if (err.message === "FutureEndDate") {
         return res.status(400).json({ error: MESSAGES.FUTURE_ENDDATE })
-      }
+      } else if (err.code === 11000) {
+        return res.status(400).json({
+          error: MESSAGES.DUPLICATE_OUTBREAK,
+        })
+      } else {
       return res.status(500).json({ error: MESSAGES.FAILED_TO_CREATE_OUTBREAK })
-    }
+    }}
   }
 
   async getAll(req, res) {
@@ -72,10 +86,8 @@ class OutbreakController {
     logger.info(`GET: /api/outbreaks by Code: ${req.params.co}`)
     try {
       const outbreaks = await OutbreakService.listByOutbreak(req.params.co)
-      const outputDTOs = outbreaks.map(
-        (outbreak) => new OutbreakOutputDTO(outbreak)
-      )
-      res
+      const outputDTOs = new OutbreakOutputDTO(outbreaks)
+      return res
         .status(200)
         .json({
           message: MESSAGES.OUTBREAK_RETRIEVED_BY_CODE,
@@ -86,11 +98,11 @@ class OutbreakController {
         return res
           .status(404)
           .json({ error: MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE })
-      }
+      } else {
       return res
         .status(500)
         .json({ error: MESSAGES.FAILED_TO_RETRIEVE_OUTBREAK_BY_CODE })
-    }
+    }}
   }
 
   async getByVirusCode(req, res) {
@@ -139,6 +151,7 @@ class OutbreakController {
     }
   }
 
+
   async getAllByCondition(req, res) {
     logger.info(`GET: /api/outbreaks by Condition: ${req.params.condition}`)
     try {
@@ -182,7 +195,7 @@ class OutbreakController {
           .json({ error: MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE })
       }
       if (error.message === "MissingRequiredFields") {
-        return res.status(404).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
+        return res.status(400).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
       }
       if (error.message === "VirusNotFound") {
         return res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
@@ -242,7 +255,7 @@ class OutbreakController {
           .json({ error: MESSAGES.OUTBREAK_SEARCHED_NOT_FOUND })
       }
       if (error.message === "MissingRequiredFields") {
-        return res.status(404).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
+        return res.status(400).json({ error: MESSAGES.MISSING_REQUIRED_FIELDS })
       }
       if (error.message === "VirusNotFound") {
         return res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
@@ -300,7 +313,7 @@ class OutbreakController {
       }
       if (error.message === "GuidelineAssociated") {
         return res
-          .status(404)
+          .status(400)
           .json({ error: MESSAGES.CANNOT_DELETE_GUIDELINES_ASSOCIATED })
       }
       return res.status(500).json({ error: MESSAGES.FAILED_TO_DELETE_OUTBREAK })

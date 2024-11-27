@@ -111,8 +111,8 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("PUT /api/viruses/:cv", () => {
-    test("should update an existing virus", async () => {
-      const updatedVirusData = { name: "UpdatedInfluenza", cv: "AA11" }
+    test("should update an existing virus' name", async () => {
+      const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB12" }
 
       const response = await request(app)
         .put("/api/viruses/AB12")
@@ -122,7 +122,43 @@ describe("Virus API Tests with Authentication", () => {
       expect(response.status).toBe(200)
       expect(response.body.data.name).toBe("UpdatedInfluenza")
     })
+  })
+  
+  describe("GET /api/viruses/name/:name", () => {
+    test("should retrieve a virus by its new name", async () => {
+      const response = await request(app).get(
+        "/api/viruses/name/UpdatedInfluenza"
+      )
 
+      expect(response.status).toBe(200)
+      expect(response.body.data.name).toBe("UpdatedInfluenza")
+    })
+  })
+
+  describe("PUT /api/viruses/:cv", () => {
+    test("should update an existing virus' code", async () => {
+      const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB13" }
+
+      const response = await request(app)
+        .put("/api/viruses/AB12")
+        .set("Authorization", `Bearer ${AdminToken}`)
+        .send(updatedVirusData)
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.cv).toBe("AB13")
+    })
+  })
+
+  describe("GET /api/viruses/cv/:cv", () => {
+    test("should retrieve a virus by its new code", async () => {
+      const response = await request(app).get("/api/viruses/cv/AB13")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.cv).toBe("AB13")
+    })
+  })
+
+  describe("PUT /api/viruses/:cv", () => {
     test("should return 404 if virus to update is not found", async () => {
       const updatedVirusData = { name: "NonExistentVirus", cv: "AB22" }
 
@@ -139,7 +175,7 @@ describe("Virus API Tests with Authentication", () => {
   describe("DELETE /api/viruses/:cv", () => {
     test("should delete a virus by its code", async () => {
       const response = await request(app)
-        .delete("/api/viruses/AA11")
+        .delete("/api/viruses/AB13")
         .set("Authorization", `Bearer ${AdminToken}`)
 
       expect(response.status).toBe(200)
@@ -153,6 +189,23 @@ describe("Virus API Tests with Authentication", () => {
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
+    })
+  })
+
+  describe("GET /api/viruses/cv/:cv", () => {
+    test("should not retrieve the deleted virus by its code", async () => {
+      const response = await request(app).get("/api/viruses/cv/AB13")
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
+    })
+    test("should not retrieve the deleted virus by its name", async () => {
+      const response = await request(app).get(
+        "/api/viruses/name/UpdatedInfluenza"
+      )
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_NAME)
     })
   })
 })
