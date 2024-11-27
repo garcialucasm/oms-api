@@ -1,5 +1,7 @@
 import Guideline from "../models/guidelineModel.js"
 import Outbreak from "../models/outbreakModel.js"
+import Country from "../models/countryModel.js"
+import Virus from "../models/virusModel.js"
 
 class GuidelineService {
   async save(guidelineModel) {
@@ -33,6 +35,27 @@ class GuidelineService {
     const guidelines = await Guideline.find({
       isExpired: isExpired,
     }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
+    if (guidelines.length === 0) {
+      throw new Error("GuidelineNotFound")
+    }
+    return guidelines
+  }
+
+  async listByCountryAndVirus(cc, cv) {
+    const country = await Country.findOne({cc: cc}).populate("zone")
+    if (!country) {
+      throw new Error("CountryNotFound")
+    }
+    const virus = await Virus.findOne({cv: cv})
+    if (!virus) {
+      throw new Error("VirusNotFound")
+    }
+    const outbreak = await Outbreak.findOne({zone: country.zone._id, virus: virus._id, condition: "active"})
+    if (!outbreak) {
+      throw new Error("OutbreakNotFound")
+    }
+    const guidelines = await Guideline.find({outbreak: outbreak._id}).populate({ path: "outbreak", select: "co zone virus condition -_id" })
+    
     if (guidelines.length === 0) {
       throw new Error("GuidelineNotFound")
     }
