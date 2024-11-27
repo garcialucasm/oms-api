@@ -3,13 +3,15 @@ import bcrypt from "bcrypt"
 import fs from "fs"
 import path from "path"
 
+import logger from "../../src/logger"
+
 const initializeTestDatabase = async () => {
   const dbPath = path.resolve("testdatabase.db")
 
   /* ----------------- Drop the existing database if it exists ---------------- */
   if (fs.existsSync(dbPath)) {
     fs.unlinkSync(dbPath)
-    console.log("Existing database dropped.")
+    logger.info("Existing database dropped.")
   }
 
   const db = new sqlite3.Database(dbPath)
