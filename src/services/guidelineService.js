@@ -30,13 +30,13 @@ class GuidelineService {
     if (isExpired != "true" && isExpired != "false") {
       throw new Error("InvalidStatus")
     }
-    const guideline = await Guideline.findOne({
+    const guidelines = await Guideline.find({
       isExpired: isExpired,
     }).populate({ path: "outbreak", select: "co zone virus condition -_id" })
-    if (!guideline) {
+    if (guidelines.length === 0) {
       throw new Error("GuidelineNotFound")
     }
-    return guideline
+    return guidelines
   }
 
   async editByCode(code, data) {
@@ -53,7 +53,8 @@ class GuidelineService {
 
     guideline.cg = cg || guideline.cg
     guideline.outbreak = outbreakDoc?._id || guideline.outbreak
-    guideline.validityPeriod = validityPeriod || guideline.validityPeriod
+    validityPeriod !== undefined ? guideline.validityPeriod = validityPeriod : guideline.validityPeriod = guideline.validityPeriod
+    
 
     await guideline.save()
     const populatedGuideline = await Guideline.findOne({
@@ -93,7 +94,7 @@ class GuidelineService {
             guideline.validityPeriod * 24 * 60 * 60 * 1000
         )
 
-        guideline.isExpired = expirationDate < currentDate ? true : false
+        guideline.isExpired = expirationDate <= currentDate ? true : false
         await guideline.save()
       }
       console.log("Validity updated successfully for all guidelines.")

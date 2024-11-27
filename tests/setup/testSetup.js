@@ -9,7 +9,7 @@ import logger from "../../src/logger.js"
 dotenv.config()
 
 const db = await initializeTestDatabase()
-let AdminToken = null
+let adminToken = null
 
 beforeAll(async () => {
   /* ------------------------- Connect to the database ------------------------ */
@@ -25,7 +25,7 @@ beforeAll(async () => {
     .send(adminUser)
 
   expect(loginResponse.status).toBe(200)
-  AdminToken = loginResponse.body.userToken
+  adminToken = loginResponse.body.userToken
 
   /* ------------------------------ Start server ------------------------------ */
   if (!server.listening) {
@@ -43,4 +43,4 @@ afterAll(async () => {
   db.close()
 })
 
-export { AdminToken }
+export { adminToken }

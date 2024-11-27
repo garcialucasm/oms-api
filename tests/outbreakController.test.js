@@ -7,7 +7,7 @@ import Virus from "../src/models/virusModel.js"
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { AdminToken } from "./setup/testSetup.js"
+import { adminToken } from "./setup/testSetup.js"
 
 dotenv.config()
 
@@ -20,7 +20,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newZone = { cz: "A2", name: "ZonaA2" }
     const zoneResponse = await request(app)
       .post("/api/zones")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newZone)
     expect(zoneResponse.status).toBe(201)
     zone = zoneResponse.body.data.cz
@@ -28,7 +28,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newVirus = { cv: "AB12", name: "ValidVirus" }
     const virusResponse = await request(app)
       .post("/api/viruses")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newVirus)
     expect(virusResponse.status).toBe(201)
 
@@ -37,7 +37,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newZone2 = { cz: "B2", name: "ZonaB2" }
     const zoneResponse2 = await request(app)
       .post("/api/zones")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newZone2)
     expect(zoneResponse2.status).toBe(201)
     zone = zoneResponse2.body.data.cz
@@ -45,7 +45,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newVirus2 = { cv: "XZ12", name: "VirusXZ" }
     const virusResponse2 = await request(app)
       .post("/api/viruses")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newVirus2)
     expect(virusResponse2.status).toBe(201)
     virus = virusResponse2.body.data.cz
@@ -53,7 +53,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newZone3 = { cz: "C2", name: "ZonaC2" }
     const zoneResponse3 = await request(app)
       .post("/api/zones")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newZone3)
     expect(zoneResponse3.status).toBe(201)
     zone = zoneResponse3.body.data.cz
@@ -61,7 +61,7 @@ describe("Outbreak API Tests with Authentication", () => {
     const newVirus3 = { cv: "VV12", name: "VirusVV" }
     const virusResponse3 = await request(app)
       .post("/api/viruses")
-      .set("Authorization", `Bearer ${AdminToken}`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newVirus3)
     expect(virusResponse3.status).toBe(201)
     virus = virusResponse3.body.data.cz
@@ -140,7 +140,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(201)
       expect(response.body.data.co).toBe("8X")
@@ -155,7 +155,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.DUPLICATE_OUTBREAK)
@@ -170,7 +170,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_CODE_VALIDATION_ERROR)
@@ -185,7 +185,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
@@ -200,7 +200,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -211,7 +211,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -226,7 +226,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
@@ -242,7 +242,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
@@ -258,7 +258,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_ALREADY_EXISTS)
@@ -273,7 +273,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
@@ -289,7 +289,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
@@ -305,7 +305,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
@@ -322,7 +322,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
       expect(response.status).toBe(201)
       expect(response.body.data.condition).toBe("occurred")
@@ -405,7 +405,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/8A")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -430,7 +430,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -454,7 +454,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -485,7 +485,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -509,7 +509,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -533,7 +533,7 @@ describe("Outbreak API Tests with Authentication", () => {
       }
       const response = await request(app)
         .put("/api/outbreaks/co/NoCo")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
 
       expect(response.status).toBe(404)
@@ -545,7 +545,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -562,7 +562,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
@@ -579,7 +579,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -596,7 +596,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
@@ -613,7 +613,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
@@ -630,7 +630,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
@@ -647,7 +647,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
@@ -664,7 +664,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/co/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
@@ -675,7 +675,7 @@ describe("Outbreak API Tests with Authentication", () => {
     test("should not delete an inexistent outbreak", async () => {
       const response = await request(app)
         .delete("/api/outbreaks/INVALID")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
@@ -689,14 +689,14 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const virusResponse = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(virusToDelete)
       expect(virusResponse.status).toBe(201)
 
       const newZone = { cz: "M2", name: "ToBeDeleted" }
       const zoneResponse = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(zoneResponse.status).toBe(201)
 
@@ -709,7 +709,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const outbreakResponse = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
       expect(outbreakResponse.status).toBe(201)
 
@@ -721,14 +721,14 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const guidelineResponse = await request(app)
         .post("/api/guidelines")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newGuideline)
       expect(guidelineResponse.status).toBe(201)
 
       await Guideline.create()
       const response = await request(app)
         .delete("/api/outbreaks/6P")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(
@@ -739,7 +739,7 @@ describe("Outbreak API Tests with Authentication", () => {
     test("should delete outbreak", async () => {
       const response = await request(app)
         .delete("/api/outbreaks/1Z")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.OUTBREAK_DELETED)
@@ -763,7 +763,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/CC17")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -788,7 +788,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/CC17")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -812,7 +812,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/M2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -836,7 +836,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -860,7 +860,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
 
       expect(response.status).toBe(200)
@@ -878,7 +878,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -895,7 +895,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
@@ -912,7 +912,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -929,7 +929,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_STARTDATE_FORMAT)
@@ -946,7 +946,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_ENDDATE_FORMAT)
@@ -963,7 +963,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_STARTDATE)
@@ -980,7 +980,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.FUTURE_ENDDATE)
@@ -997,7 +997,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ENDDATE_BEFORE_STARTDATE)
@@ -1014,7 +1014,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/C2/INVALID")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.VIRUS_SEARCHED_NOT_FOUND)
@@ -1031,7 +1031,7 @@ describe("Outbreak API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/outbreaks/cz/cv/INVALID/VV12")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidOutbreak)
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_SEARCHED_NOT_FOUND)
