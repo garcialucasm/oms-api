@@ -18,7 +18,7 @@ const GuidelineSchema = new Schema(
       ref: "Outbreak",
       required: true,
     },
-    validityPeriod: { type: Number, required: true },
+    validityPeriod: { type: Number, required: true, min: [0, "Validity period cannot be negative"] },
     isExpired: { type: Boolean, default: false },
   },
   {

@@ -2,10 +2,6 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import request from "supertest"
 
-import Country from "../src/models/countryModel.js"
-import Virus from "../src/models/virusModel.js"
-import Outbreak from "../src/models/outbreakModel.js"
-import Zone from "../src/models/zoneModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
 
@@ -181,13 +177,23 @@ describe("Zone API Tests with Authentication", () => {
     })
 
     test("should return 400 if zone to delete has countries associated", async () => {
-      const newZone = await Zone.create({ cz: "Z3", name: "ZoneTest3" })
+      const newZone = { cz: "Z3", name: "ZoneTest3" }
+      const zoneResponse = await request(app)
+        .post("/api/zones")
+        /* .set("Authorization", `Bearer ${authToken}`) */
+        .send(newZone)
+      expect(zoneResponse.status).toBe(201)
 
-      await Country.create({
+      const newCountry = {
         cc: "PT",
         name: "Portugal",
-        zone: newZone._id,
-      })
+        zone: "Z3",
+      }
+      const countryResponse = await request(app)
+        .post("/api/countries")
+        /* .set("Authorization", `Bearer ${authToken}`) */
+        .send(newCountry)
+      expect(countryResponse.status).toBe(201)
 
       const response = await request(app).delete("/api/zones/Z3")
       /* .set("Authorization", `Bearer ${authToken}`) */
@@ -199,16 +205,36 @@ describe("Zone API Tests with Authentication", () => {
     })
 
     test("should return 400 if zone to delete has outbreaks associated", async () => {
-      const newZone = await Zone.create({ cz: "Z4", name: "ZoneTest4" })
-      
-      const outbreakVirus = await Virus.create({ cv: "VV11", name: "VirusTest1" })
+      const newZone = { cz: "Z4", name: "ZoneTest4" }
+      const zoneResponse = await request(app)
+        .post("/api/zones")
+        /* .set("Authorization", `Bearer ${authToken}`) */
+        .send(newZone)
+      expect(zoneResponse.status).toBe(201)
 
-      await Outbreak.create({
+      const newVirus = {
+        cv: "VV11",
+        name: "VirusTest1",
+      }
+      const virusResponse = await request(app)
+        .post("/api/viruses")
+        /* .set("Authorization", `Bearer ${authToken}`) */
+        .send(newVirus)
+      expect(virusResponse.status).toBe(201)
+
+      const newOutbreak = {
         co: "1O",
-        zone: newZone._id,
-        virus: outbreakVirus._id,
-        startDate: "2024/10/10",
-      })
+        zone: "Z4",
+        virus: "VV11",
+        startDate: "2024/10/10"
+      }
+      
+      const outbreakResponse = await request(app)
+        .post("/api/outbreaks")
+        /* .set("Authorization", `Bearer ${authToken}`) */
+        .send(newOutbreak)
+      expect(outbreakResponse.status).toBe(201)
+
       const response = await request(app).delete("/api/zones/Z4")
       /* .set("Authorization", `Bearer ${authToken}`) */
 

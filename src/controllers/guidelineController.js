@@ -72,12 +72,12 @@ class GuidelineController {
   async getGuidelinesByStatus(req, res) {
     logger.info("GET:/api/guidelines by Status: " + req.params.status)
     try {
-      const guideline = await GuidelineService.listByStatus(req.params.status)
-      const outputDTO = new GuidelineOutputDTO(guideline)
-      res.status(200).json({ message: MESSAGES.GUIDELINE_RETRIEVED_BY_STATUS, data: outputDTO })
+      const guidelines = await GuidelineService.listByStatus(req.params.status)
+      const outputDTOs = guidelines.map((guideline) => new GuidelineOutputDTO(guideline))
+      res.status(200).json({ message: MESSAGES.GUIDELINES_RETRIEVED_BY_STATUS, data: outputDTOs })
     } catch (err) {
       logger.error(
-        "GuidelineController - Failed to retrieve guideline by status"
+        "GuidelineController - Failed to retrieve guidelines by status"
       )
       if (err.message === "InvalidStatus") {
         res
@@ -86,7 +86,7 @@ class GuidelineController {
       } else if (err.message === "GuidelineNotFound") {
         res.status(404).json({ error: MESSAGES.GUIDELINE_NOT_FOUND_BY_STATUS })
       } else {
-        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_GUIDELINE_BY_STATUS })
+        res.status(500).json({ error: MESSAGES.FAILED_TO_RETRIEVE_GUIDELINES_BY_STATUS })
       }
     }
   }

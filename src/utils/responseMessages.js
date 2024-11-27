@@ -117,7 +117,7 @@ export const MESSAGES = {
   GUIDELINES_RETRIEVED: "Guidelines retrieved successfully.",
   GUIDELINE_RETRIEVED: "Guideline retrieved successfully",
   GUIDELINE_RETRIEVED_BY_CODE: "Guideline retrieved by code.",
-  GUIDELINE_RETRIEVED_BY_STATUS: "Guideline retrieved by status",
+  GUIDELINES_RETRIEVED_BY_STATUS: "Guidelines retrieved by status",
   GUIDELINE_UPDATED: "Guideline updated successfully",
   GUIDELINE_DELETED: "Guideline deleted successfully",
   /* -------------------------------------------------------------------------- */
@@ -133,7 +133,7 @@ export const MESSAGES = {
   GUIDELINE_NOT_EXPIRED: "Cannot delete guideline if not expired",
   FAILED_TO_RETRIEVE_GUIDELINES: "Failed to retrieve guidelines",
   FAILED_TO_RETRIEVE_GUIDELINE_BY_CODE: "Failed to retrieve guideline",
-  FAILED_TO_RETRIEVE_GUIDELINE_BY_STATUS: "Failed to retrieve guideline",
+  FAILED_TO_RETRIEVE_GUIDELINES_BY_STATUS: "Failed to retrieve guidelineS",
   FAILED_TO_UPDATE_GUIDELINE: "Failed to update guideline",
   FAILED_TO_DELETE_GUIDELINE: "Failed to delete guideline",
   /* -------------------------------------------------------------------------- */
