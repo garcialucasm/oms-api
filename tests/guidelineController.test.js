@@ -5,18 +5,12 @@ import request from "supertest"
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
+import { AdminToken } from "./setup/testSetup.js"
 
 dotenv.config()
 
-let authToken
-
 describe("Guideline API Tests with Authentication", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.DB_TEST_CONNECTION_STRING, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-
     const newZone = { cz: "Z1", name: "ZoneTest1" }
     const zoneResponse = await request(app)
       .post("/api/zones")
@@ -61,28 +55,13 @@ describe("Guideline API Tests with Authentication", () => {
       .set("Authorization", `Bearer ${AdminToken}`)
       .send(newOutbreak1)
     expect(outbreakResponse1.status).toBe(201)
-
-    const adminUser = { username: "admin", password: "testadmin123" }
-
-    const loginResponse = await request(app)
-      .post("/api/auth/login")
-      .send(adminUser)
-    expect(loginResponse.status).toBe(200)
-    authToken = loginResponse.body.userToken
   })
-})
-
-afterAll(async () => {
-  await mongoose.connection.dropDatabase()
-  await mongoose.connection.close()
-  server.close()
-})
 
 describe("GET /api/guidelines", () => {
   test("should return 404 for no found guidelines", async () => {
     const response = await request(app)
       .get("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(404)
     expect(Array.isArray(response.body.data)).toBe(false)
@@ -103,7 +82,7 @@ describe("POST /api/guidelines", () => {
 
     const response = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(newGuideline)
     expect(response.status).toBe(201)
     expect(response.body.data.cg).toBe("11GG")
@@ -120,13 +99,13 @@ describe("POST /api/guidelines", () => {
 
     const firstResponse = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(newGuideline)
     expect(firstResponse.status).toBe(201)
 
     const secondResponse = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(newGuideline)
     expect(secondResponse.status).toBe(400)
     expect(secondResponse.body.error).toBe(MESSAGES.DUPLICATE_GUIDELINE)
@@ -141,7 +120,7 @@ describe("POST /api/guidelines", () => {
 
     const response = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(invalidGuideline)
     expect(response.status).toBe(400)
     expect(response.body.error.message).toContain(
@@ -158,7 +137,7 @@ describe("POST /api/guidelines", () => {
 
     const response = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(unknownOutbreak)
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
@@ -169,7 +148,7 @@ describe("POST /api/guidelines", () => {
 
     const response = await request(app)
       .post("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(invalidGuideline)
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -180,7 +159,7 @@ describe("GET /api/guidelines", () => {
   test("should return all guidelines", async () => {
     const response = await request(app)
       .get("/api/guidelines")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body.data)).toBe(true)
@@ -191,7 +170,7 @@ describe("GET /api/guidelines/cg/:cg", () => {
   test("should retrieve a guideline by its code", async () => {
     const response = await request(app)
       .get("/api/guidelines/cg/11GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(200)
     expect(response.body.data.cg).toBe("11GG")
@@ -200,7 +179,7 @@ describe("GET /api/guidelines/cg/:cg", () => {
   test("should return 404 if the guideline is not found by code", async () => {
     const response = await request(app)
       .get("/api/guidelines/cg/33GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
@@ -211,7 +190,7 @@ describe("GET /api/guideline/status/:status", () => {
   test("should retrieve a guideline by its status", async () => {
     const response = await request(app)
       .get("/api/guidelines/status/false")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(200)
     expect(Array.isArray(response.body.data)).toBe(true)
@@ -220,7 +199,7 @@ describe("GET /api/guideline/status/:status", () => {
   test("should return 404 if the guideline is not found by status", async () => {
     const response = await request(app)
       .get("/api/guidelines/status/true")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_STATUS)
@@ -229,7 +208,7 @@ describe("GET /api/guideline/status/:status", () => {
   test("should return 400 if the status parameter is invalid", async () => {
     const response = await request(app)
       .get("/api/guidelines/status/1111")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.INVALID_STATUS_PARAMETER)
@@ -246,7 +225,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/11GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(201)
@@ -269,7 +248,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(201)
@@ -292,7 +271,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(201)
@@ -315,7 +294,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/11GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(400)
@@ -330,7 +309,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(400)
@@ -346,7 +325,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(400)
@@ -362,7 +341,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(400)
@@ -378,7 +357,7 @@ describe("PUT /api/guidelines/:cg", () => {
 
     const response = await request(app)
       .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
       .send(updatedGuidelineData)
 
     expect(response.status).toBe(400)
@@ -392,7 +371,7 @@ describe("DELETE /api/guidelines", () => {
   test("should return 400 if guideline to delete is not expired", async () => {
     const response = await request(app)
       .delete("/api/guidelines/expired/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_EXPIRED)
@@ -401,7 +380,7 @@ describe("DELETE /api/guidelines", () => {
   test("should delete a guideline by its code", async () => {
     const response = await request(app)
       .delete("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(200)
     expect(response.body.message).toBe(MESSAGES.GUIDELINE_DELETED)
@@ -410,9 +389,10 @@ describe("DELETE /api/guidelines", () => {
   test("should return 400 if guideline to delete is not found", async () => {
     const response = await request(app)
       .delete("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${authToken}`)
+      .set("Authorization", `Bearer ${AdminToken}`)
 
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
   })
+})
 })
