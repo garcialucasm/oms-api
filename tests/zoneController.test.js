@@ -4,7 +4,7 @@ import request from "supertest"
 
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { AdminToken } from "./setup/testSetup.js"
+import { adminToken } from "./setup/testSetup.js"
 
 dotenv.config()
 
@@ -15,7 +15,7 @@ describe("Zone API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(response.status).toBe(201)
       expect(response.body.data.cz).toBe("Z1")
@@ -27,13 +27,13 @@ describe("Zone API Tests with Authentication", () => {
 
       const firstResponse = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(firstResponse.status).toBe(201)
 
       const secondResponse = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(secondResponse.status).toBe(400)
       expect(secondResponse.body.error).toBe(MESSAGES.DUPLICATE_ZONE)
@@ -44,7 +44,7 @@ describe("Zone API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidZone)
       expect(response.status).toBe(400)
       expect(response.body.error.message).toContain(
@@ -57,7 +57,7 @@ describe("Zone API Tests with Authentication", () => {
 
       const response = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(invalidZone)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
@@ -68,7 +68,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should return all zones", async () => {
       const response = await request(app)
         .get("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
@@ -79,7 +79,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should retrieve a zone by its name", async () => {
       const response = await request(app)
         .get("/api/zones/name/ZoneTest1")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.data.name).toBe("ZoneTest1")
@@ -88,7 +88,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should return 404 if the zone is not found by name", async () => {
       const response = await request(app)
         .get("/api/zones/name/UnknownZone")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_NAME)
@@ -99,7 +99,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should retrieve a zone by its code", async () => {
       const response = await request(app)
         .get("/api/zones/cz/Z1")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.data.cz).toBe("Z1")
@@ -108,7 +108,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should return 404 if the zone is not found by code", async () => {
       const response = await request(app)
         .get("/api/zones/cz/U0")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -121,7 +121,7 @@ describe("Zone API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/zones/Z1")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(updatedZoneData)
 
       expect(response.status).toBe(201)
@@ -133,7 +133,7 @@ describe("Zone API Tests with Authentication", () => {
 
       const response = await request(app)
         .put("/api/zones/N0")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(updatedZoneData)
 
       expect(response.status).toBe(400)
@@ -145,7 +145,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should delete a zone by its code", async () => {
       const response = await request(app)
         .delete("/api/zones/Z1")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.ZONE_DELETED)
@@ -154,7 +154,7 @@ describe("Zone API Tests with Authentication", () => {
     test("should return 400 if zone to delete is not found", async () => {
       const response = await request(app)
         .delete("/api/zones/N0")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
@@ -164,7 +164,7 @@ describe("Zone API Tests with Authentication", () => {
       const newZone = { cz: "Z3", name: "ZoneTest3" }
       const zoneResponse = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(zoneResponse.status).toBe(201)
 
@@ -175,13 +175,13 @@ describe("Zone API Tests with Authentication", () => {
       }
       const countryResponse = await request(app)
         .post("/api/countries")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newCountry)
       expect(countryResponse.status).toBe(201)
 
       const response = await request(app)
         .delete("/api/zones/Z3")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(
@@ -193,7 +193,7 @@ describe("Zone API Tests with Authentication", () => {
       const newZone = { cz: "Z4", name: "ZoneTest4" }
       const zoneResponse = await request(app)
         .post("/api/zones")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(zoneResponse.status).toBe(201)
 
@@ -203,7 +203,7 @@ describe("Zone API Tests with Authentication", () => {
       }
       const virusResponse = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newVirus)
       expect(virusResponse.status).toBe(201)
 
@@ -216,13 +216,13 @@ describe("Zone API Tests with Authentication", () => {
 
       const outbreakResponse = await request(app)
         .post("/api/outbreaks")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(newOutbreak)
       expect(outbreakResponse.status).toBe(201)
 
       const response = await request(app)
         .delete("/api/zones/Z4")
-        .set("Authorization", `Bearer ${AdminToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(
