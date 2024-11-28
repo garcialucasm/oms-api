@@ -1,13 +1,9 @@
-import mongoose from "mongoose"
-import dotenv from "dotenv"
 import request from "supertest"
 
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
 import { adminToken } from "./setup/testSetup.js"
-
-dotenv.config()
 
 describe("Guideline API Tests with Authentication", () => {
   beforeAll(async () => {
