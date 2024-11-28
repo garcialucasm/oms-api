@@ -14,6 +14,13 @@ describe("Guideline API Tests with Authentication", () => {
       .send(newZone)
     expect(zoneResponse.status).toBe(201)
 
+    const newCountry = { cc: "PT", name: "Portugal", zone: "Z1" }
+    const countryResponse = await request(app)
+      .post("/api/countries")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newCountry)
+    expect(countryResponse.status).toBe(201)
+
     const newZone1 = { cz: "Z2", name: "ZoneTest2" }
     const zoneResponse1 = await request(app)
       .post("/api/zones")
@@ -21,12 +28,26 @@ describe("Guideline API Tests with Authentication", () => {
       .send(newZone1)
     expect(zoneResponse1.status).toBe(201)
 
+    const newCountry1 = { cc: "ES", name: "Spain", zone: "Z2" }
+    const countryResponse1 = await request(app)
+      .post("/api/countries")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newCountry1)
+    expect(countryResponse1.status).toBe(201)
+
     const newVirus = { cv: "VV11", name: "VirusTest1" }
     const virusResponse = await request(app)
       .post("/api/viruses")
       .set("Authorization", `Bearer ${adminToken}`)
       .send(newVirus)
     expect(virusResponse.status).toBe(201)
+
+    const newVirus1 = { cv: "VV22", name: "VirusTest2" }
+    const virusResponse1 = await request(app)
+      .post("/api/viruses")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newVirus1)
+    expect(virusResponse1.status).toBe(201)
 
     const newOutbreak = {
       co: "1O",
@@ -209,6 +230,53 @@ describe("GET /api/guideline/status/:status", () => {
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.INVALID_STATUS_PARAMETER)
   })
+})
+
+describe("GET /api/guideline/cc/cv/:cc/:cv", () => {
+  test("should retrieve a guideline by country and virus", async () => {
+    const response = await request(app)
+      .get("/api/guidelines/cc/cv/PT/VV11")
+      .set("Authorization", `Bearer ${adminToken}`)
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(response.body.data)).toBe(true)
+  })
+
+  test("should return 400 due to non existent country", async () => {
+    const response = await request(app)
+      .get("/api/guidelines/cc/cv/FR/VV11")
+      .set("Authorization", `Bearer ${adminToken}`)
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
+  })
+  
+  test("should return 400 due to non existent virus", async () => {
+    const response = await request(app)
+      .get("/api/guidelines/cc/cv/PT/AA11")
+      .set("Authorization", `Bearer ${adminToken}`)
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
+  }) 
+
+  test("should return 400 due to non existent outbreak", async () => {
+    const response = await request(app)
+      .get("/api/guidelines/cc/cv/PT/VV22")
+      .set("Authorization", `Bearer ${adminToken}`)
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND)
+  })
+  
+  test("should return 400 due to non existent guideline", async () => {
+    const response = await request(app)
+      .get("/api/guidelines/cc/cv/ES/VV11")
+      .set("Authorization", `Bearer ${adminToken}`)
+
+    expect(response.status).toBe(404)
+    expect(Array.isArray(response.body.data)).toBe(false)
+  }) 
 })
 
 describe("PUT /api/guidelines/:cg", () => {
