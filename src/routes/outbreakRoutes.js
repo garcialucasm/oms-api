@@ -11,6 +11,7 @@ router.get("/condition/:condition",verifyToken, OutbreakController.getAllByCondi
 router.get("/co/:co",verifyToken, OutbreakController.getByCode)
 router.get("/cv/:cv",verifyToken, OutbreakController.getByVirusCode)
 router.get("/cz/:cz",verifyToken, OutbreakController.getByZoneCode)
+router.get("/cc/:cc",verifyToken, OutbreakController.getByCountryCode)
 router.put("/co/:co",verifyToken, OutbreakController.update)
 router.put("/cz/cv/:cz/:cv",verifyToken, OutbreakController.updateByZoneCodeVirusCode)
 router.delete("/:co",verifyToken, OutbreakController.delete)

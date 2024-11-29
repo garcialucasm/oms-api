@@ -1,6 +1,7 @@
 import Outbreak from "../models/outbreakModel.js"
 import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
+import Country from "../models/countryModel.js"
 import Guideline from "../models/guidelineModel.js"
 
 class OutbreakService {
@@ -65,6 +66,20 @@ class OutbreakService {
     }
     return outbreaks
   }
+
+  async listByCountry(cc) {
+    const country = await Country.findOne({ cc: cc })
+    if (!country) {
+      throw new Error("CountryNotFound")
+    }
+
+    const outbreaks = await Outbreak.find({zone:country.zone, condition: "active"})
+    if (outbreaks.length === 0)
+      throw new Error("OutbreakNotFound")
+    return outbreaks
+  }
+
+  
 
   async listActOcc(condition) {
     if (condition !== "active" && condition !== "occurred") {
