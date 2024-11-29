@@ -122,8 +122,9 @@ describe("Country API Tests with Authentication", () => {
 
   describe("GET /api/countries", () => {
     test("should return all countries", async () => {
-      const response = await request(app).get("/api/countries")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries")
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
@@ -132,44 +133,47 @@ describe("Country API Tests with Authentication", () => {
 
   describe("GET /api/countries/cc/:cc", () => {
     test("should retrieve a country by its code", async () => {
-      const response = await request(app).get("/api/countries/cc/PT")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries/cc/PT")
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.data[0].cc).toBe("PT")
     })
 
     test("should return 404 if the country is not found", async () => {
-      const response = await request(app).get("/api/countries/cc/ZZ")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries/cc/ZZ")
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
     })
+  })
 
+  describe("GET /api/countries/cc/info/:cc", () => {
     test("should retrieve all available information about outbreaks and guidelines given a country code", async () => {
-      const response = await request(app).get("/api/countries/cc/info/PT")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries/cc/info/PT")
+        .set("Authorization", `Bearer ${adminToken}`)
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
     })
 
     test("should return 400 for no country code match", async () => {
-      const response = await request(app).get("/api/countries/cc/info/FR")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries/cc/info/FR")
+        .set("Authorization", `Bearer ${adminToken}`)
       expect(response.status).toBe(400)
-      expect(response.body.error).toBe(
-        MESSAGES.COUNTRY_NOT_FOUND
-      )
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
     })
 
     test("should return 404 for no outbreaks found", async () => {
-      const response = await request(app).get("/api/countries/cc/info/BR")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .get("/api/countries/cc/info/BR")
+        .set("Authorization", `Bearer ${adminToken}`)
       expect(response.status).toBe(404)
-      expect(response.body.error).toBe(
-        MESSAGES.OUTBREAK_NOT_FOUND
-      )
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND)
     })
   })
 
@@ -237,16 +241,18 @@ describe("Country API Tests with Authentication", () => {
 
   describe("DELETE /api/countries/cc/:cc", () => {
     test("should delete a country by its code", async () => {
-      const response = await request(app).delete("/api/countries/cc/GR")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .delete("/api/countries/cc/GR")
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.COUNTRY_DELETED)
     })
 
     test("should return 404 if the country is not found for deletion", async () => {
-      const response = await request(app).delete("/api/countries/cc/ZZ")
-      .set("Authorization", `Bearer ${adminToken}`)
+      const response = await request(app)
+        .delete("/api/countries/cc/ZZ")
+        .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
