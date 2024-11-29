@@ -16,6 +16,32 @@ describe("Country API Tests with Authentication", () => {
       .send(newZone)
     expect(zoneResponse.status).toBe(201)
     zone = zoneResponse.body.data.cz
+
+    const newZone1 = { cz: "A3", name: "ZonaA3" }
+    const zoneResponse1 = await request(app)
+      .post("/api/zones")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newZone1)
+    expect(zoneResponse1.status).toBe(201)
+
+    const newVirus = { cv: "VV11", name: "VirusTest1" }
+    const virusResponse = await request(app)
+      .post("/api/viruses")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newVirus)
+    expect(virusResponse.status).toBe(201)
+
+    const newOutbreak = {
+      co: "1O",
+      zone: "A2",
+      virus: "VV11",
+      startDate: "2024/10/10",
+    }
+    const outbreakResponse = await request(app)
+      .post("/api/outbreaks")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newOutbreak)
+    expect(outbreakResponse.status).toBe(201)
   })
 
   describe("POST /api/countries", () => {
@@ -42,7 +68,7 @@ describe("Country API Tests with Authentication", () => {
     })
 
     test("should not create an already existing country name", async () => {
-      const newCountry = { name: "Brazil", zone }
+      const newCountry = { name: "Brazil", zone: "A3" }
 
       const firstResponse = await request(app)
         .post("/api/countries")
@@ -122,6 +148,32 @@ describe("Country API Tests with Authentication", () => {
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
+    })
+  })
+
+  describe("GET /api/countries/cc/info/:cc", () => {
+    test("should retrieve all available information about outbreaks and guidelines given a country code", async () => {
+      const response = await request(app)
+        .get("/api/countries/cc/info/PT")
+        .set("Authorization", `Bearer ${adminToken}`)
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
+
+    test("should return 400 for no country code match", async () => {
+      const response = await request(app)
+        .get("/api/countries/cc/info/FR")
+        .set("Authorization", `Bearer ${adminToken}`)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
+    })
+
+    test("should return 404 for no outbreaks found", async () => {
+      const response = await request(app)
+        .get("/api/countries/cc/info/BR")
+        .set("Authorization", `Bearer ${adminToken}`)
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND)
     })
   })
 
