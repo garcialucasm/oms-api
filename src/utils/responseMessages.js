@@ -19,6 +19,7 @@ export const MESSAGES = {
   FAILED_TO_RETRIEVE_COUNTRIES: "Failed to retrieve countries",
   FAILED_TO_RETRIEVE_COUNTRY_BY_CODE: "Failed to retrieve country by code",
   FAILED_TO_RETRIEVE_COUNTRY_BY_NAME: "Failed to retrieve country by name",
+  FAILED_TO_RETRIEVE_INFO_BY_COUNTRY_CODE: "Failed to retrieve all info by country code",
   FAILED_TO_UPDATE_COUNTRY: "Failed to update country",
   FAILED_TO_DELETE_COUNTRY: "Failed to delete country",
   /* -------------------------------------------------------------------------- */
