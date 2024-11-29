@@ -151,6 +151,26 @@ class OutbreakController {
     }
   }
 
+  async getByCountryCode(req, res) {
+    logger.info(`GET: /api/cc/outbreaks by Country Code: ${req.params.cc}`)
+    try {
+      const outbreaks = await OutbreakService.listByCountry(req.params.cc)
+      const outputDTOs = outbreaks.map(
+        (outbreak) => new OutbreakOutputDTO(outbreak)
+      )
+      res
+        .status(200)
+        .json({ message: MESSAGES.OUTBREAKS_RETRIEVED, data: outputDTOs })
+    } catch (error) {
+      if (error.message === "OutbreakNotFound") {
+        return res.status(404).json({ error: MESSAGES.NO_OUTBREAKS_FOUND })
+      }
+      return res
+        .status(500)
+        .json({ error: MESSAGES.FAILED_TO_RETRIEVE_OUTBREAKS })
+    }
+  }
+
 
   async getAllByCondition(req, res) {
     logger.info(`GET: /api/outbreaks by Condition: ${req.params.condition}`)
