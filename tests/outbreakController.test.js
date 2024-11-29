@@ -1,15 +1,9 @@
-import dotenv from "dotenv"
 import request from "supertest"
 
 import Guideline from "../src/models/guidelineModel.js"
-import Zone from "../src/models/zoneModel.js"
-import Virus from "../src/models/virusModel.js"
-import Outbreak from "../src/models/outbreakModel.js"
-import { app, server } from "../src/app.js"
+import { app } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
 import { adminToken } from "./setup/testSetup.js"
-
-dotenv.config()
 
 describe("Outbreak API Tests with Authentication", () => {
   let zone

@@ -1,6 +1,8 @@
 import logger from "../logger.js"
 import Country from "../models/countryModel.js"
 import Zone from "../models/zoneModel.js"
+import Outbreak from "../models/outbreakModel.js"
+import Guideline from "../models/guidelineModel.js"
 import { getCountryIso2 } from "../utils/countriesData.js"
 
 class CountryService {
@@ -23,6 +25,44 @@ class CountryService {
     }
 
     return countries
+  }
+
+  async listAllInfo(cc) {
+    const country = await Country.findOne({ cc: cc }).populate("zone")
+    if (!country) {
+      throw new Error("CountryNotFound")
+    }
+
+    const outbreaks = await Outbreak.find({
+      zone: country.zone._id,
+    }).populate([{ path: "zone" }, { path: "virus" }])
+    if (outbreaks.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    const outbreakIds = outbreaks.map((outbreak) => outbreak._id)
+    const guidelines = await Guideline.find({
+      outbreak: { $in: outbreakIds },
+    }).populate({
+      path: "outbreak",
+      populate: [{ path: "zone" }, { path: "virus" }],
+    })
+
+    if (guidelines.length === 0) {
+      return outbreaks
+    }
+
+    const outbreaksWithGuidelines = guidelines.map((guideline) =>
+      guideline.outbreak._id.toString()
+    )
+    const outbreaksWithoutGuidelines = outbreaks.filter(
+      (outbreak) => !outbreaksWithGuidelines.includes(outbreak._id.toString())
+    )
+
+    const result = {
+      guidelines,
+      outbreaksWithoutGuidelines,
+    }
+    return result
   }
 
   async update(cc, name, zone) {

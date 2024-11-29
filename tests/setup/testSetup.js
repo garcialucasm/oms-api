@@ -1,12 +1,9 @@
 import mongoose from "mongoose"
 import request from "supertest"
-import dotenv from "dotenv"
 
 import initializeTestDatabase from "../utils/testDatabaseSetup.js"
 import { app, server } from "../../src/app.js"
 import logger from "../../src/logger.js"
-
-dotenv.config()
 
 const db = await initializeTestDatabase()
 let adminToken = null

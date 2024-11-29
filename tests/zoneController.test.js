@@ -1,12 +1,8 @@
-import mongoose from "mongoose"
-import dotenv from "dotenv"
 import request from "supertest"
 
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
 import { adminToken } from "./setup/testSetup.js"
-
-dotenv.config()
 
 describe("Zone API Tests with Authentication", () => {
   describe("POST /api/zones", () => {

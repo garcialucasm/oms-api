@@ -19,6 +19,7 @@ export const MESSAGES = {
   FAILED_TO_RETRIEVE_COUNTRIES: "Failed to retrieve countries",
   FAILED_TO_RETRIEVE_COUNTRY_BY_CODE: "Failed to retrieve country by code",
   FAILED_TO_RETRIEVE_COUNTRY_BY_NAME: "Failed to retrieve country by name",
+  FAILED_TO_RETRIEVE_INFO_BY_COUNTRY_CODE: "Failed to retrieve all info by country code",
   FAILED_TO_UPDATE_COUNTRY: "Failed to update country",
   FAILED_TO_DELETE_COUNTRY: "Failed to delete country",
   /* -------------------------------------------------------------------------- */
@@ -121,6 +122,7 @@ export const MESSAGES = {
   GUIDELINE_RETRIEVED: "Guideline retrieved successfully",
   GUIDELINE_RETRIEVED_BY_CODE: "Guideline retrieved by code.",
   GUIDELINES_RETRIEVED_BY_STATUS: "Guidelines retrieved by status",
+  GUIDELINES_RETRIEVED_BY_COUNTRY_AND_VIRUS: "Guidelines retrieved by country and virus code",
   GUIDELINE_UPDATED: "Guideline updated successfully",
   GUIDELINE_DELETED: "Guideline deleted successfully",
   /* -------------------------------------------------------------------------- */
@@ -132,6 +134,7 @@ export const MESSAGES = {
   GUIDELINE_SEARCHED_NOT_FOUND: "Guideline not found with the searched guideline code",
   NO_GUIDELINES_FOUND: "No guidelines found",
   GUIDELINE_NOT_FOUND_BY_STATUS: "Guideline not found with the given guideline status",
+  GUIDELINE_NOT_FOUND_BY_OUTBREAK: "Guideline not found with the outbreak that matches the country and virus given",
   INVALID_STATUS_PARAMETER: "Invalid search parameter. Try true or false",
   GUIDELINE_NOT_EXPIRED: "Cannot delete guideline if not expired",
   FAILED_TO_RETRIEVE_GUIDELINES: "Failed to retrieve guidelines",

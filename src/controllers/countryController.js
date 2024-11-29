@@ -119,6 +119,32 @@ class CountryController {
     }
   }
 
+  async getAllInfo(req, res) {
+    logger.info(`GET: /api/countries/cc/info/${req.params.cc}`)
+    try {
+      const guidelines = await CountryService.listAllInfo(req.params.cc)
+      res.status(200).json({
+        message: MESSAGES.COUNTRY_RETRIEVED_BY_NAME,
+        data: guidelines,
+      })
+    } catch (err) {
+      logger.error(
+        "CountryController - Error retrieving all info by code - ",
+        err
+      )
+      if (err.message === "CountryNotFound") {
+        res.status(400).json({ error: MESSAGES.COUNTRY_NOT_FOUND })
+      } else if (err.message === "OutbreakNotFound") {
+        res.status(404).json({ error: MESSAGES.OUTBREAK_NOT_FOUND })
+      } else {
+        res.status(500).json({
+          message: MESSAGES.FAILED_TO_RETRIEVE_INFO_BY_COUNTRY_CODE,
+          error: err,
+        })
+      }
+    }
+  }
+
   async update(req, res) {
     const { cc } = req.params
     logger.info(`PUT: /api/countries/${cc}`)
