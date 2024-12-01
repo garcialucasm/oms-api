@@ -52,6 +52,24 @@ class OutbreakService {
     return outbreaks
   }
 
+  async listByVirusAndCondition(cv,condition) {
+    if (condition !== "active" && condition !== "occurred")
+      throw new Error("InvalidParams")
+    
+    const virus = await Virus.findOne({ cv: cv })
+    if (!virus) {
+      throw new Error("VirusNotFound")
+    }
+
+    const outbreaks = await Outbreak.find({ virus: virus._id, condition: condition })
+      .populate("virus")
+      .populate("zone")
+    if (outbreaks.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreaks
+  }
+
   async listByZone(cz) {
     const zone = await Zone.findOne({ cz: cz })
     if (!zone) {
