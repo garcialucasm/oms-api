@@ -6,7 +6,6 @@ import { MESSAGES } from "../utils/responseMessages.js"
 import UserInputDTO from "../DTO/userInputDTO.js"
 
 const secureKey = process.env.SECRET_KEY
-
 class UserController {
   async register(req, res) {
     const { username, password, idCard, name, role } = req.body
@@ -31,15 +30,16 @@ class UserController {
             res.status(400).json({
               error: MESSAGES.DUPLICATE_IDCARD,
             })
-          } else if (err.message === "MissingRequiredFields") {
-            res.status(400).json({
-              error: MESSAGES.MISSING_REQUIRED_FIELDS,
-            })
-          }
+          } 
         }
       }
-    } catch (error) {
-      logger.error("UserController - register: ", error.message)
+    } catch (err) {
+      logger.error("UserController - register: ", err.message)
+      if (err.message === "MissingRequiredFields") {
+        res.status(400).json({
+          error: MESSAGES.MISSING_REQUIRED_FIELDS,
+        })
+      } else
       res.status(500).json({ error: MESSAGES.FAILED_REGISTER })
     }
   }

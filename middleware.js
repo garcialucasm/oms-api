@@ -38,7 +38,9 @@ const verifyToken = (req, res, next) => {
         }
       } else if (req.method === "DELETE") {
         return res.status(403).json({ error: "Access denied for this route" })
-      }
+      } else if (req.baseUrl === "/api/auth/activate/"){
+        return res.status(403).json({ error: "Access denied for this route" })
+      } 
     } else {
       return next()
     }
