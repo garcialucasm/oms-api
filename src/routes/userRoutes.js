@@ -7,7 +7,8 @@ const router = express.Router()
 
 router.post("/register", verifyToken, UserController.register)
 router.post("/login", UserController.login)
-router.put("/markinactive/:username", verifyToken, UserController.markInactive)
+router.delete("/:username", verifyToken, UserController.markInactive)
+router.put("/activate/:username", verifyToken, UserController.markActive)
 router.put("/update/:username", verifyToken, UserController.updateUser)
 
 export { router as userRoutes }
