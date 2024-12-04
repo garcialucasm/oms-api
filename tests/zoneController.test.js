@@ -17,7 +17,7 @@ describe("Zone API Tests with Authentication", () => {
   })
 
   describe("POST /api/zones", () => {
-    test.skip("should not create a new zone without authentication", async () => {
+    test("should not create a new zone without authentication", async () => {
       const newZone = { cz: "Z1", name: "ZoneTest1" }
       const response = await request(app).post("/api/zones").send(newZone)
       expect(response.status).toBe(403)
@@ -149,7 +149,7 @@ describe("Zone API Tests with Authentication", () => {
   })
 
   describe("PUT /api/zones/:cz", () => {
-    test.skip("should not update a zone without authentication", async () => {
+    test("should not update a zone without authentication", async () => {
       const updatedZoneData = { name: "UpdatedZoneTest1", cz: "Z1" }
 
       const response = await request(app)
@@ -196,7 +196,7 @@ describe("Zone API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/zones/:cz", () => {
-    test.skip("should not delete a zone without authentication", async () => {
+    test("should not delete a zone without authentication", async () => {
       const response = await request(app).delete("/api/zones/Z1")
 
       expect(response.status).toBe(403)

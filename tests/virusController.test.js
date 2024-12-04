@@ -6,7 +6,7 @@ import { app } from "../src/app.js"
 
 describe("Virus API Tests with Authentication", () => {
   describe("POST /api/viruses", () => {
-    test.skip("should not create a new virus without authentication", async () => {
+    test("should not create a new virus without authentication", async () => {
       const newVirus = { cv: "AB12", name: "Influenza" }
       const response = await request(app).post("/api/viruses").send(newVirus)
       expect(response.status).toBe(403)
