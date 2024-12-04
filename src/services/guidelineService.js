@@ -3,6 +3,8 @@ import Outbreak from "../models/outbreakModel.js"
 import Country from "../models/countryModel.js"
 import Virus from "../models/virusModel.js"
 
+import logger from "../logger.js"
+
 class GuidelineService {
   async save(guidelineModel) {
     await guidelineModel.save()
@@ -127,9 +129,11 @@ class GuidelineService {
         guideline.isExpired = expirationDate <= currentDate ? true : false
         await guideline.save()
       }
-      console.log("Validity updated successfully for all guidelines.")
+      logger.info(
+        "GuidelineService - updateValidity - Validity updated successfully"
+      )
     } catch (err) {
-      console.error("Error updating validity:", err)
+      logger.error("GuidelineService - Error updating validity:", err)
     }
   }
 }

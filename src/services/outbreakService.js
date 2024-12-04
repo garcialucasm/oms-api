@@ -28,7 +28,7 @@ class OutbreakService {
   }
 
   async listByOutbreak(co) {
-    const outbreak = await Outbreak.findOne({ co:co })
+    const outbreak = await Outbreak.findOne({ co: co })
       .populate("virus")
       .populate("zone")
     if (!outbreak) {
@@ -52,16 +52,19 @@ class OutbreakService {
     return outbreaks
   }
 
-  async listByVirusAndCondition(cv,condition) {
+  async listByVirusAndCondition(cv, condition) {
     if (condition !== "active" && condition !== "occurred")
       throw new Error("InvalidParams")
-    
+
     const virus = await Virus.findOne({ cv: cv })
     if (!virus) {
       throw new Error("VirusNotFound")
     }
 
-    const outbreaks = await Outbreak.find({ virus: virus._id, condition: condition })
+    const outbreaks = await Outbreak.find({
+      virus: virus._id,
+      condition: condition,
+    })
       .populate("virus")
       .populate("zone")
     if (outbreaks.length === 0) {
@@ -91,13 +94,13 @@ class OutbreakService {
       throw new Error("CountryNotFound")
     }
 
-    const outbreaks = await Outbreak.find({zone:country.zone, condition: "active"})
-    if (outbreaks.length === 0)
-      throw new Error("OutbreakNotFound")
+    const outbreaks = await Outbreak.find({
+      zone: country.zone,
+      condition: "active",
+    })
+    if (outbreaks.length === 0) throw new Error("OutbreakNotFound")
     return outbreaks
   }
-
-  
 
   async listActOcc(condition) {
     if (condition !== "active" && condition !== "occurred") {
@@ -171,7 +174,6 @@ class OutbreakService {
   }
 
   async updateByZoneCodeVirusCode(cz, cv, outbreakModel) {
-    console.log(cz)
     //Validação para verificar se existe algum virus com cv, zona com cz e outbreak com o par
     const virus = await Virus.findOne({ cv: cv })
     if (!virus) {
