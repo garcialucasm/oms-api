@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3"
 import bcrypt from "bcrypt"
 import {} from "dotenv/config"
+import logger from "../logger"
 
 const dbConfig = {
   test: process.env.DB_SQLITE_TEST,
@@ -60,6 +61,7 @@ class UserService {
         [username, hashedPassword, idCard, name, role, status],
         function (err) {
           if (err) {
+            logger.error("UserService - saveUser: ", err)
             reject(err)
           } else {
             resolve({ message: "User saved successfully" })
@@ -76,6 +78,7 @@ class UserService {
         ["inactive", username],
         function (err) {
           if (err) {
+            logger.error("UserService - markInactive: ", err)
             reject(err)
           } else {
             resolve({
@@ -94,6 +97,7 @@ class UserService {
         ["active", username],
         function (err) {
           if (err) {
+            logger.error("UserService - markActive: ", err)
             reject(err)
           } else {
             resolve({
@@ -137,6 +141,7 @@ class UserService {
 
       db.run(query, params, function (err) {
         if (err) {
+          logger.error("UserService - updateUser: ", err)
           reject(err)
         } else {
           resolve({ message: "User updated successfully" })

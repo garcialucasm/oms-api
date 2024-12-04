@@ -30,7 +30,7 @@ class UserController {
             res.status(400).json({
               error: MESSAGES.DUPLICATE_IDCARD,
             })
-          } 
+          }
         }
       }
     } catch (err) {
@@ -39,8 +39,7 @@ class UserController {
         res.status(400).json({
           error: MESSAGES.MISSING_REQUIRED_FIELDS,
         })
-      } else
-      res.status(500).json({ error: MESSAGES.FAILED_REGISTER })
+      } else res.status(500).json({ error: MESSAGES.FAILED_REGISTER })
     }
   }
 
