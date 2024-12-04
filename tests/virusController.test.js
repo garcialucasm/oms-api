@@ -13,20 +13,18 @@ describe("Virus API Tests with Authentication", () => {
       expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
     })
 
-    test.only("should create a new virus with employee logged in", async () => {
+    test("should create a new virus with employee logged in", async () => {
       const newVirus = { cv: "XX77", name: "TestVirus" }
-      console.log("🚀 ~ test.only ~ employeeToken:", employeeToken)
-      console.log("🚀 ~ test.only ~ adminToken:", adminToken)
       const response = await request(app)
         .post("/api/viruses")
-        .set("Authorization", `Bearer ${adminToken}`)
+        .set("Authorization", `Bearer ${employeeToken}`)
         .send(newVirus)
       expect(response.status).toBe(201)
       expect(response.body.data.cv).toBe("xx77")
       expect(response.body.data.name).toBe("testvirus")
     })
 
-    test.only("should create a new virus", async () => {
+    test("should create a new virus", async () => {
       const newVirus = { cv: "AB12", name: "Influenza" }
       const response = await request(app)
         .post("/api/viruses")

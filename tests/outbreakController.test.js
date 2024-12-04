@@ -886,8 +886,8 @@ describe("Outbreak API Tests with Authentication", () => {
     test("should update an existing outbreak's code with employee logged in", async () => {
       const newOutbreak = {
         co: "6L",
-        virus: "CC17",
-        zone: "M2",
+        virus: "XX77",
+        zone: "X7",
         startDate: "2010/10/10",
       }
 

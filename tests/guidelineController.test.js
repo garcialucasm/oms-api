@@ -128,7 +128,7 @@ describe("Guideline API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${employeeToken}`)
         .send(newGuideline)
       expect(response.status).toBe(201)
-      expect(response.body.data.cg).toBe("77XX")
+      expect(response.body.data.cg).toBe("77xx")
       expect(response.body.data.validityPeriod).toBe(10)
     })
 
@@ -365,14 +365,14 @@ describe("Guideline API Tests with Authentication", () => {
         .send(updatedGuidelineData)
 
       expect(response.status).toBe(201)
-      expect(response.body.data.cg).toBe("88XX")
+      expect(response.body.data.cg).toBe("88xx")
     })
 
     test("should find guideline with updated code by employee logged in", async () => {
       const response = await request(app).get("/api/guidelines/cg/88XX")
 
       expect(response.status).toBe(200)
-      expect(response.body.data.cg).toBe("88XX")
+      expect(response.body.data.cg).toBe("88xx")
     })
 
     test("should update an existing guideline outbreak", async () => {
