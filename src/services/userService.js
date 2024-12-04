@@ -1,7 +1,7 @@
 import sqlite3 from "sqlite3"
 import bcrypt from "bcrypt"
 import {} from "dotenv/config"
-import logger from "../logger"
+import logger from "../logger.js"
 
 const dbConfig = {
   test: process.env.DB_SQLITE_TEST,

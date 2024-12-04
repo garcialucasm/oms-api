@@ -3,7 +3,7 @@ import bcrypt from "bcrypt"
 import fs from "fs"
 import path from "path"
 
-import logger from "../../src/logger"
+import logger from "../../src/logger.js"
 
 const initializeTestDatabase = async () => {
   const dbPath = path.resolve(process.env.DB_SQLITE_TEST)

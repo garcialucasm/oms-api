@@ -17,7 +17,7 @@ const ZoneSchema = new Schema(
     name: {
       type: String,
       lowercase: true,
-      set: (value) => value.replace(/\s+/g, " ").trim(),
+      set: (value) => value?.replace(/\s+/g, " ").trim(),
     },
   },
   {
