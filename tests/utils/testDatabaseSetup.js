@@ -6,7 +6,7 @@ import path from "path"
 import logger from "../../src/logger"
 
 const initializeTestDatabase = async () => {
-  const dbPath = path.resolve("testdatabase.db")
+  const dbPath = path.resolve(process.env.DB_SQLITE_TEST)
 
   /* ----------------- Drop the existing database if it exists ---------------- */
   if (fs.existsSync(dbPath)) {

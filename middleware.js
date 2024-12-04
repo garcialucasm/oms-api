@@ -9,9 +9,11 @@ const verifyToken = (req, res, next) => {
 
   //Deixar utilizadores nao autenticados fazerem GET apenas
   if (!token) {
-    if (req.baseUrl === "/api/auth/register") {
+    if (req.originalUrl === "/api/auth/register") {
       return res.status(403).json({ error: "Access denied for this route" })
     } else if (req.method === "GET") {
+      return next()
+    } else if (req.originalUrl === "/api/auth/login") {
       return next()
     } else {
       return res.status(403).json({ error: MESSAGES.AUTH_REQUIRED })
@@ -38,9 +40,9 @@ const verifyToken = (req, res, next) => {
         }
       } else if (req.method === "DELETE") {
         return res.status(403).json({ error: "Access denied for this route" })
-      } else if (req.baseUrl === "/api/auth/activate/"){
+      } else if (req.baseUrl === "/api/auth/activate/") {
         return res.status(403).json({ error: "Access denied for this route" })
-      } 
+      }
     } else {
       return next()
     }
