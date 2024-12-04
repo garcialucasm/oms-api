@@ -86,7 +86,7 @@ describe("Guideline API Tests with Authentication", () => {
   })
 
   describe("POST /api/guidelines", () => {
-    test.skip("should not create a new guideline without authentication", async () => {
+    test("should not create a new guideline without authentication", async () => {
       const newGuideline = {
         cg: "11GG",
         outbreak: "1O",
@@ -97,7 +97,7 @@ describe("Guideline API Tests with Authentication", () => {
         .post("/api/guidelines")
         .send(newGuideline)
       expect(response.status).toBe(403)
-      expect(countryResponse.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
     })
 
     test("should create a new guideline", async () => {
@@ -289,7 +289,7 @@ describe("Guideline API Tests with Authentication", () => {
   })
 
   describe("PUT /api/guidelines/:cg", () => {
-    test.skip("should not update a guideline without authentication", async () => {
+    test("should not update a guideline without authentication", async () => {
       const updatedGuidelineData = {
         cg: "12GG",
         outbreak: "1O",
@@ -456,7 +456,7 @@ describe("Guideline API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/guidelines", () => {
-    test.skip("should not delete a guideline without authentication", async () => {
+    test("should not delete a guideline without authentication", async () => {
       const response = await request(app).delete("/api/guidelines/11GG")
 
       expect(response.status).toBe(403)

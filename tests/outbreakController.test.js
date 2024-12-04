@@ -124,7 +124,7 @@ describe("Outbreak API Tests with Authentication", () => {
   })
 
   describe("POST /api/outbreaks", () => {
-    test.skip("should not create a new outbreak without authentication", async () => {
+    test("should not create a new outbreak without authentication", async () => {
       const newOutbreak = {
         co: "8X",
         virus: "AB12",
@@ -136,7 +136,7 @@ describe("Outbreak API Tests with Authentication", () => {
         .post("/api/outbreaks")
         .send(newOutbreak)
       expect(response.status).toBe(403)
-      expect(countryResponse.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
     })
 
     test("should create a new outbreak", async () => {
@@ -403,7 +403,7 @@ describe("Outbreak API Tests with Authentication", () => {
   })
 
   describe("PUT /api/outbreaks/co/:co", () => {
-    test.skip("should not update an outbreak without authentication", async () => {
+    test("should not update an outbreak without authentication", async () => {
       const newOutbreak = {
         co: "1Z",
         virus: "XZ12",
@@ -762,7 +762,7 @@ describe("Outbreak API Tests with Authentication", () => {
       )
     })
 
-    test.skip("should not delete an outbreak without authentication", async () => {
+    test("should not delete an outbreak without authentication", async () => {
       const response = await request(app).delete("/api/outbreaks/1Z")
 
       expect(response.status).toBe(403)

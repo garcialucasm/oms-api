@@ -6,7 +6,7 @@ import { app } from "../src/app.js"
 
 describe("Virus API Tests with Authentication", () => {
   describe("POST /api/viruses", () => {
-    test.skip("should not create a new virus without authentication", async () => {
+    test("should not create a new virus without authentication", async () => {
       const newVirus = { cv: "AB12", name: "Influenza" }
       const response = await request(app)
         .post("/api/viruses")
@@ -120,7 +120,7 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("PUT /api/viruses/:cv", () => {
-    test.skip("should not update a country without authentication", async () => {
+    test("should not update a country without authentication", async () => {
       const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB12" }
 
       const response = await request(app)
@@ -193,7 +193,7 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/viruses/:cv", () => {
-    test.skip("should not delete a country without authentication", async () => {
+    test("should not delete a country without authentication", async () => {
       const response = await request(app)
         .delete("/api/viruses/AB13")
 
