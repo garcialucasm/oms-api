@@ -3,7 +3,7 @@ import request from "supertest"
 import Guideline from "../src/models/guidelineModel.js"
 import { app } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { adminToken } from "./setup/testSetup.js"
+import { adminToken, employeeToken } from "./setup/testSetup.js"
 
 describe("Outbreak API Tests with Authentication", () => {
   let zone
@@ -59,6 +59,22 @@ describe("Outbreak API Tests with Authentication", () => {
       .send(newVirus3)
     expect(virusResponse3.status).toBe(201)
     virus = virusResponse3.body.data.cz
+
+    const newZone4 = { cz: "X7", name: "ZonaX7" }
+    const zoneResponse4 = await request(app)
+      .post("/api/zones")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newZone4)
+    expect(zoneResponse4.status).toBe(201)
+    zone = zoneResponse4.body.data.cz
+
+    const newVirus4 = { cv: "XX77", name: "VirusXX77" }
+    const virusResponse4 = await request(app)
+      .post("/api/viruses")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newVirus4)
+    expect(virusResponse4.status).toBe(201)
+    virus = virusResponse4.body.data.cz
   })
 
   describe("GET /api/outbreaks", () => {
@@ -153,6 +169,22 @@ describe("Outbreak API Tests with Authentication", () => {
         .send(newOutbreak)
       expect(response.status).toBe(201)
       expect(response.body.data.co).toBe("8x")
+    })
+
+    test("should create a new outbreak with employee logged in", async () => {
+      const newOutbreak = {
+        co: "0L",
+        virus: "XX77",
+        zone: "X7",
+        startDate: "2010/10/10",
+      }
+
+      const response = await request(app)
+        .post("/api/outbreaks")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newOutbreak)
+      expect(response.status).toBe(201)
+      expect(response.body.data.co).toBe("0l")
     })
 
     test("should not create a duplicate outbreak code", async () => {
@@ -346,6 +378,15 @@ describe("Outbreak API Tests with Authentication", () => {
       expect(Array.isArray(response.body.data)).toBe(true)
     })
 
+    test("should return all outbreaks with employee logged in", async () => {
+      const response = await request(app)
+        .get("/api/outbreaks")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
+
     test("should return all active outbreaks", async () => {
       const response = await request(app).get("/api/outbreaks/condition/active")
 
@@ -443,6 +484,30 @@ describe("Outbreak API Tests with Authentication", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.data.co).toBe("1z")
+    })
+
+    test("should update an existing outbreak's code with employee logged in", async () => {
+      const newOutbreak = {
+        co: "7X",
+        virus: "XX77",
+        zone: "X7",
+        startDate: "2010/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/co/0L")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newOutbreak)
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.co).toBe("7x")
+    })
+
+    test("should find outbreak with updated code with employee logged in", async () => {
+      const response = await request(app).get("/api/outbreaks/co/7X")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.co).toBe("7x")
     })
 
     test("should update an existing outbreak's virus", async () => {
@@ -769,6 +834,14 @@ describe("Outbreak API Tests with Authentication", () => {
       expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
     })
 
+    test("should fail to delete outbreak with employee logged in", async () => {
+      const response = await request(app)
+        .delete("/api/outbreaks/1Z")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(403)
+    })
+
     test("should delete outbreak", async () => {
       const response = await request(app)
         .delete("/api/outbreaks/1Z")
@@ -808,6 +881,30 @@ describe("Outbreak API Tests with Authentication", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.data.co).toBe("7k")
+    })
+
+    test("should update an existing outbreak's code with employee logged in", async () => {
+      const newOutbreak = {
+        co: "6L",
+        virus: "CC17",
+        zone: "M2",
+        startDate: "2010/10/10",
+      }
+
+      const response = await request(app)
+        .put("/api/outbreaks/cz/cv/X7/XX77")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newOutbreak)
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.co).toBe("6l")
+    })
+
+    test("should find outbreak with updated code with employee logged in", async () => {
+      const response = await request(app).get("/api/outbreaks/co/6l")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.co).toBe("6l")
     })
 
     test("should update an existing outbreak's virus", async () => {

@@ -3,7 +3,7 @@ import request from "supertest"
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { adminToken } from "./setup/testSetup.js"
+import { adminToken, employeeToken } from "./setup/testSetup.js"
 
 describe("Guideline API Tests with Authentication", () => {
   beforeAll(async () => {
@@ -116,6 +116,22 @@ describe("Guideline API Tests with Authentication", () => {
       expect(response.body.data.validityPeriod).toBe(10)
     })
 
+    test("should create a new guideline with employee logged in", async () => {
+      const newGuideline = {
+        cg: "77XX",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newGuideline)
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("77XX")
+      expect(response.body.data.validityPeriod).toBe(10)
+    })
+
     test("should not create a duplicate guideline code", async () => {
       const newGuideline = {
         cg: "22GG",
@@ -186,6 +202,15 @@ describe("Guideline API Tests with Authentication", () => {
       const response = await request(app)
         .get("/api/guidelines")
         .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
+
+    test("should return all guidelines with employee logged in", async () => {
+      const response = await request(app)
+        .get("/api/guidelines")
+        .set("Authorization", `Bearer ${employeeToken}`)
 
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
@@ -325,6 +350,29 @@ describe("Guideline API Tests with Authentication", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.data.cg).toBe("12gg")
+    })
+
+    test("should update an existing guideline code with employee logged in", async () => {
+      const updatedGuidelineData = {
+        cg: "88XX",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/77XX")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("88XX")
+    })
+
+    test("should find guideline with updated code by employee logged in", async () => {
+      const response = await request(app).get("/api/guidelines/cg/88XX")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.cg).toBe("88XX")
     })
 
     test("should update an existing guideline outbreak", async () => {
@@ -470,6 +518,14 @@ describe("Guideline API Tests with Authentication", () => {
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_EXPIRED)
+    })
+
+    test("should not delete a guideline by its code with employee logged in", async () => {
+      const response = await request(app)
+        .delete("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(403)
     })
 
     test("should delete a guideline by its code", async () => {
