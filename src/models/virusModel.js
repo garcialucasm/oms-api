@@ -15,7 +15,8 @@ const VirusSchema = new Schema(
     name: {
       type: String,
       unique: true,
-      lowercase: true
+      lowercase: true,
+      set: (value) => value.replace(/\s+/g, " ").trim(),
     },
   },
   { collection: "viruses", timestamps: true }
