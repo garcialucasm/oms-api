@@ -10,6 +10,7 @@ const OutbreakSchema = new Schema(
         /^[0-9]{1}[A-Za-z]{1}$/,
         "Outbreak code must start with 1 numerical character and end with 1 letter.",
       ],
+      lowercase: true
     },
     virus: {
       type: Schema.Types.ObjectId,

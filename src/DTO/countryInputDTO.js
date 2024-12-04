@@ -23,9 +23,9 @@ class CountryInputDTO {
     this.cc = countryISOCode
 
     return new Country({
-      cc: countryISOCode.toUpperCase(),
-      name: this.name.toUpperCase(),
-      zone: this.zone.toUpperCase(),
+      cc: countryISOCode,
+      name: this.name,
+      zone: this.zone,
     })
   }
 }

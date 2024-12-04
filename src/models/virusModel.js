@@ -10,10 +10,12 @@ const VirusSchema = new Schema(
         /^[A-Za-z]{2}[0-9]{2}$/,
         "Virus code must start with 2 letters and end with 2 numerical characters",
       ],
+      lowercase: true
     },
     name: {
       type: String,
       unique: true,
+      lowercase: true
     },
   },
   { collection: "viruses", timestamps: true }
