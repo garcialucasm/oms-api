@@ -12,6 +12,7 @@ const GuidelineSchema = new Schema(
       ],
       minlength: [4, "Guideline code must be exatcly 4 characters"],
       maxlength: [4, "Guideline code must be exatcly 4 characters"],
+      lowercase: true
     },
     outbreak: {
       type: Schema.Types.ObjectId,

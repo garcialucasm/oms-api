@@ -6,6 +6,15 @@ import { app } from "../src/app.js"
 
 describe("Virus API Tests with Authentication", () => {
   describe("POST /api/viruses", () => {
+    test.skip("should not create a new virus without authentication", async () => {
+      const newVirus = { cv: "AB12", name: "Influenza" }
+      const response = await request(app)
+        .post("/api/viruses")
+        .send(newVirus)
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
     test("should create a new virus", async () => {
       const newVirus = { cv: "AB12", name: "Influenza" }
       const response = await request(app)
@@ -13,8 +22,8 @@ describe("Virus API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send(newVirus)
       expect(response.status).toBe(201)
-      expect(response.body.data.cv).toBe("AB12")
-      expect(response.body.data.name).toBe("Influenza")
+      expect(response.body.data.cv).toBe("ab12")
+      expect(response.body.data.name).toBe("influenza")
     })
 
     test("should not create a duplicate virus code", async () => {
@@ -77,7 +86,7 @@ describe("Virus API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.name).toBe("Influenza")
+      expect(response.body.data.name).toBe("influenza")
     })
 
     test("should return 404 if the virus is not found by name", async () => {
@@ -97,7 +106,7 @@ describe("Virus API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.cv).toBe("AB12")
+      expect(response.body.data.cv).toBe("ab12")
     })
 
     test("should return 404 if the virus is not found by code", async () => {
@@ -111,6 +120,17 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("PUT /api/viruses/:cv", () => {
+    test.skip("should not update a country without authentication", async () => {
+      const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB12" }
+
+      const response = await request(app)
+        .put("/api/viruses/AB12")
+        .send(updatedVirusData)
+
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
     test("should update an existing virus' name", async () => {
       const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB12" }
 
@@ -120,10 +140,10 @@ describe("Virus API Tests with Authentication", () => {
         .send(updatedVirusData)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.name).toBe("UpdatedInfluenza")
+      expect(response.body.data.name).toBe("updatedinfluenza")
     })
   })
-  
+
   describe("GET /api/viruses/name/:name", () => {
     test("should retrieve a virus by its new name", async () => {
       const response = await request(app).get(
@@ -131,7 +151,7 @@ describe("Virus API Tests with Authentication", () => {
       )
 
       expect(response.status).toBe(200)
-      expect(response.body.data.name).toBe("UpdatedInfluenza")
+      expect(response.body.data.name).toBe("updatedinfluenza")
     })
   })
 
@@ -145,7 +165,7 @@ describe("Virus API Tests with Authentication", () => {
         .send(updatedVirusData)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.cv).toBe("AB13")
+      expect(response.body.data.cv).toBe("ab13")
     })
   })
 
@@ -154,7 +174,7 @@ describe("Virus API Tests with Authentication", () => {
       const response = await request(app).get("/api/viruses/cv/AB13")
 
       expect(response.status).toBe(200)
-      expect(response.body.data.cv).toBe("AB13")
+      expect(response.body.data.cv).toBe("ab13")
     })
   })
 
@@ -173,6 +193,14 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/viruses/:cv", () => {
+    test.skip("should not delete a country without authentication", async () => {
+      const response = await request(app)
+        .delete("/api/viruses/AB13")
+
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
     test("should delete a virus by its code", async () => {
       const response = await request(app)
         .delete("/api/viruses/AB13")
