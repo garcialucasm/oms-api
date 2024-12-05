@@ -138,7 +138,7 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("PUT /api/viruses/:cv", () => {
-    test.skip("should not update a virus without authentication", async () => {
+    test("should not update a virus without authentication", async () => {
       const updatedVirusData = { name: "UpdatedInfluenza", cv: "AB12" }
 
       const response = await request(app)
@@ -232,7 +232,7 @@ describe("Virus API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/viruses/:cv", () => {
-    test.skip("should not delete a virus without authentication", async () => {
+    test("should not delete a virus without authentication", async () => {
       const response = await request(app).delete("/api/viruses/AB13")
 
       expect(response.status).toBe(403)
