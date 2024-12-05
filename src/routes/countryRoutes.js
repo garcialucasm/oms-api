@@ -47,13 +47,6 @@ const router = express.Router()
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Country'
- *     responses:
- *       201:
- *         description: Country created successfully
- *       400:
- *         description: Validation or duplicate error
- *       500:
- *         description: Server error
  */
 router.post("/", verifyToken, CountryController.create)
 
@@ -63,19 +56,6 @@ router.post("/", verifyToken, CountryController.create)
  *   get:
  *     summary: Retrieve all countries
  *     tags: [Countries]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: List of countries
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Country'
- *       500:
- *         description: Server error
  */
 router.get("/", verifyToken, CountryController.getAll)
 
@@ -85,8 +65,6 @@ router.get("/", verifyToken, CountryController.getAll)
  *   get:
  *     summary: Retrieve a country by its code
  *     tags: [Countries]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: cc
@@ -94,13 +72,6 @@ router.get("/", verifyToken, CountryController.getAll)
  *           type: string
  *         required: true
  *         description: The country code
- *     responses:
- *       200:
- *         description: Country details
- *       404:
- *         description: Country not found
- *       500:
- *         description: Server error
  */
 router.get("/cc/:cc", verifyToken, CountryController.getByCode)
 
@@ -110,8 +81,6 @@ router.get("/cc/:cc", verifyToken, CountryController.getByCode)
  *   get:
  *     summary: Retrieve a country by its name
  *     tags: [Countries]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: name
@@ -119,13 +88,6 @@ router.get("/cc/:cc", verifyToken, CountryController.getByCode)
  *           type: string
  *         required: true
  *         description: The country name
- *     responses:
- *       200:
- *         description: Country details
- *       404:
- *         description: Country not found
- *       500:
- *         description: Server error
  */
 router.get("/name/:name", verifyToken, CountryController.getByName)
 
@@ -135,8 +97,6 @@ router.get("/name/:name", verifyToken, CountryController.getByName)
  *   get:
  *     summary: Retrieve all information about a country by its code
  *     tags: [Countries]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: cc
@@ -144,13 +104,6 @@ router.get("/name/:name", verifyToken, CountryController.getByName)
  *           type: string
  *         required: true
  *         description: The country code
- *     responses:
- *       200:
- *         description: Country information
- *       404:
- *         description: Country or related information not found
- *       500:
- *         description: Server error
  */
 router.get("/cc/info/:cc", verifyToken, CountryController.getAllInfo)
 
@@ -175,13 +128,6 @@ router.get("/cc/info/:cc", verifyToken, CountryController.getAllInfo)
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Country'
- *     responses:
- *       200:
- *         description: Country updated successfully
- *       404:
- *         description: Country not found
- *       500:
- *         description: Server error
  */
 router.put("/cc/:cc", verifyToken, CountryController.update)
 
@@ -200,13 +146,6 @@ router.put("/cc/:cc", verifyToken, CountryController.update)
  *           type: string
  *         required: true
  *         description: The country code
- *     responses:
- *       200:
- *         description: Country deleted successfully
- *       404:
- *         description: Country not found
- *       500:
- *         description: Server error
  */
 router.delete("/cc/:cc", verifyToken, CountryController.delete)
 
