@@ -32,6 +32,9 @@ const verifyToken = (req, res, next) => {
       if (req.originalUrl === "/api/auth/register") {
         return res.status(403).json({ error: "Access denied for this route" })
       }
+      if (req.baseUrl === "/api/auth" && req.method === "DELETE"){
+        return res.status(403).json({ error: "Access denied for this route" })
+      }
       if (req.baseUrl === "/api/zones" || req.baseUrl === "/api/countries") {
         if (req.method !== "GET") {
           return res.status(403).json({ error: "Access denied for this route" })
