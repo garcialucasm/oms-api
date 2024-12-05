@@ -257,6 +257,32 @@ describe("Country API Tests with Authentication", () => {
       expect(response.status).toBe(400)
     })
 
+    test("should not update when new country name already exists", async () => {
+      const newCountryData = {
+        name: "Spain",
+        zone: zone,
+      }
+
+      const toUpdateCountryData = {
+        name: "Brazil",
+        zone: zone,
+      }
+
+      const responseNewCountry = await request(app)
+        .post("/api/countries")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(newCountryData)
+
+      expect(responseNewCountry.status).toBe(201)
+
+      const responseUpdate = await request(app)
+        .put("/api/countries/cc/es")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(toUpdateCountryData)
+
+      expect(responseUpdate.status).toBe(400)
+    })
+
     test("should not update a country without authentication", async () => {
       const toUpdateCountryData = {
         name: "Canada",
