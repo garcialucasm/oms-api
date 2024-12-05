@@ -19,6 +19,12 @@ describe("Outbreak API Tests with Authentication", () => {
     expect(zoneResponse.status).toBe(201)
     zone = zoneResponse.body.data.cz
 
+    const newCountry = { name: "portugal", zone: "a2" }
+    const countryResponse = await request(app).post("/api/countries")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newCountry)
+    expect(countryResponse.status).toBe(201)
+
     const newVirus = { cv: "AB12", name: "ValidVirus" }
     const virusResponse = await request(app)
       .post("/api/viruses")
@@ -51,6 +57,13 @@ describe("Outbreak API Tests with Authentication", () => {
       .send(newZone3)
     expect(zoneResponse3.status).toBe(201)
     zone = zoneResponse3.body.data.cz
+
+    const newCountry2 = { name: "spain", zone: "c2" }
+    const countryResponse2 = await request(app)
+      .post("/api/countries")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send(newCountry2)
+    expect(countryResponse2.status).toBe(201)
 
     const newVirus3 = { cv: "VV12", name: "VirusVV" }
     const virusResponse3 = await request(app)
@@ -113,15 +126,22 @@ describe("Outbreak API Tests with Authentication", () => {
     test("should not find an outbreak by virus code that doesn't exist", async () => {
       const response = await request(app).get("/api/outbreaks/cv/NoCv")
 
-      expect(response.status).toBe(404)
+      expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
     })
 
     test("should not find an outbreak by zone code that doesn't exist", async () => {
       const response = await request(app).get("/api/outbreaks/cz/NoCz")
 
-      expect(response.status).toBe(404)
+      expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.ZONE_NOT_FOUND_BY_CODE)
+    })
+
+    test("should not find an outbreak by country code that doesn't exist", async () => {
+      const response = await request(app).get("/api/outbreaks/cc/fr")
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
     })
 
     test("should not find an outbreak by virus code that is not linked to any outbreak", async () => {
@@ -133,6 +153,13 @@ describe("Outbreak API Tests with Authentication", () => {
 
     test("should not find an outbreak by zone code that is not linked to any outbreak", async () => {
       const response = await request(app).get("/api/outbreaks/cz/A2")
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.NO_OUTBREAKS_FOUND)
+    })
+
+    test("should not find an outbreak by country code that is not linked to any outbreak", async () => {
+      const response = await request(app).get("/api/outbreaks/cc/es")
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.NO_OUTBREAKS_FOUND)
@@ -428,15 +455,38 @@ describe("Outbreak API Tests with Authentication", () => {
       expect(response.body.data[0].zone).toBe("a2")
     })
 
-    test("should not find outbreaks with given virus code", async () => {
-      const response = await request(app).get("/api/outbreaks/cv/VV12")
+    test("should return outbreaks with correct country code", async () => {
+      const response = await request(app).get("/api/outbreaks/cc/pt")
 
-      expect(response.status).toBe(404)
-      expect(response.body.error).toBe(MESSAGES.NO_OUTBREAKS_FOUND)
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
     })
 
-    test("should not find outbreaks with given zone code", async () => {
-      const response = await request(app).get("/api/outbreaks/cz/C2")
+    test("should return outbreaks with correct virus code and condition", async () => {
+      const response = await request(app).get("/api/outbreaks/cv/condition/ab12/active")
+      
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+      expect(response.body.data[0].virus).toBe("ab12")
+      expect(response.body.data[0].condition).toBe("active")
+    })
+
+    test("should return 400 for invalid condition", async () => {
+      const response = await request(app).get("/api/outbreaks/cv/condition/xz12/1111")
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.TRY_ACTIVE_OR_OCCURRED)
+    })
+
+    test("should return 400 for non existent virus code", async () => {
+      const response = await request(app).get("/api/outbreaks/cv/condition/ba12/occurred")
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
+    })
+
+    test("should not find outbreaks with given virus code and condition", async () => {
+      const response = await request(app).get("/api/outbreaks/cv/condition/ab12/occurred")
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe(MESSAGES.NO_OUTBREAKS_FOUND)
