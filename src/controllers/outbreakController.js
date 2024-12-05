@@ -58,8 +58,11 @@ class OutbreakController {
           error: MESSAGES.DUPLICATE_OUTBREAK,
         })
       } else {
-      return res.status(500).json({ error: MESSAGES.FAILED_TO_CREATE_OUTBREAK })
-    }}
+        return res
+          .status(500)
+          .json({ error: MESSAGES.FAILED_TO_CREATE_OUTBREAK })
+      }
+    }
   }
 
   async getAll(req, res) {
@@ -87,22 +90,21 @@ class OutbreakController {
     try {
       const outbreaks = await OutbreakService.listByOutbreak(req.params.co)
       const outputDTOs = new OutbreakOutputDTO(outbreaks)
-      return res
-        .status(200)
-        .json({
-          message: MESSAGES.OUTBREAK_RETRIEVED_BY_CODE,
-          data: outputDTOs,
-        })
+      return res.status(200).json({
+        message: MESSAGES.OUTBREAK_RETRIEVED_BY_CODE,
+        data: outputDTOs,
+      })
     } catch (error) {
       if (error.message === "OutbreakNotFound") {
         return res
           .status(404)
           .json({ error: MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE })
       } else {
-      return res
-        .status(500)
-        .json({ error: MESSAGES.FAILED_TO_RETRIEVE_OUTBREAK_BY_CODE })
-    }}
+        return res
+          .status(500)
+          .json({ error: MESSAGES.FAILED_TO_RETRIEVE_OUTBREAK_BY_CODE })
+      }
+    }
   }
 
   async getByVirusCode(req, res) {
@@ -120,7 +122,7 @@ class OutbreakController {
         return res.status(404).json({ error: MESSAGES.NO_OUTBREAKS_FOUND })
       }
       if (error.message === "VirusNotFound") {
-        return res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
+        return res.status(400).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
       }
       return res
         .status(500)
@@ -143,7 +145,7 @@ class OutbreakController {
         return res.status(404).json({ error: MESSAGES.NO_OUTBREAKS_FOUND })
       }
       if (error.message === "ZoneNotFound") {
-        return res.status(404).json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
+        return res.status(400).json({ error: MESSAGES.ZONE_NOT_FOUND_BY_CODE })
       }
       return res
         .status(500)
@@ -162,7 +164,9 @@ class OutbreakController {
         .status(200)
         .json({ message: MESSAGES.OUTBREAKS_RETRIEVED, data: outputDTOs })
     } catch (error) {
-      if (error.message === "OutbreakNotFound") {
+      if (error.message === "CountryNotFound") {
+        return res.status(400).json({ error: MESSAGES.COUNTRY_NOT_FOUND })
+      } else if (error.message === "OutbreakNotFound") {
         return res.status(404).json({ error: MESSAGES.NO_OUTBREAKS_FOUND })
       }
       return res
@@ -174,7 +178,10 @@ class OutbreakController {
   async getByVirusCodeByCondition(req, res) {
     logger.info(`GET: /api/occurred outbreaks by Virus Code: ${req.params.cv}`)
     try {
-      const outbreaks = await OutbreakService.listByVirusAndCondition(req.params.cv, req.params.condition)
+      const outbreaks = await OutbreakService.listByVirusAndCondition(
+        req.params.cv,
+        req.params.condition
+      )
       const outputDTOs = outbreaks.map(
         (outbreak) => new OutbreakOutputDTO(outbreak)
       )
@@ -189,14 +196,13 @@ class OutbreakController {
         return res.status(404).json({ error: MESSAGES.NO_OUTBREAKS_FOUND })
       }
       if (error.message === "VirusNotFound") {
-        return res.status(404).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
+        return res.status(400).json({ error: MESSAGES.VIRUS_NOT_FOUND_BY_CODE })
       }
       return res
         .status(500)
         .json({ error: MESSAGES.FAILED_TO_RETRIEVE_OUTBREAKS })
     }
   }
-
 
   async getAllByCondition(req, res) {
     logger.info(`GET: /api/outbreaks by Condition: ${req.params.condition}`)
