@@ -6,9 +6,37 @@ const router = express.Router()
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Guideline:
+ *       type: object
+ *       required:
+ *         - cg
+ *         - outbreak
+ *         - validityPeriod
+ *       properties:
+ *         cg:
+ *           type: string
+ *           description: Unique guideline code (2 numbers followed by 2 letters)
+ *           example: "12ab"
+ *         outbreak:
+ *           type: string
+ *           description: Outbreak ID associated with the guideline
+ *           example: "63f7dceb1b7e3b2d78e49c68"
+ *         validityPeriod:
+ *           type: number
+ *           description: Validity period of the guideline in days
+ *           example: 30
+ *         isExpired:
+ *           type: boolean
+ *           description: Whether the guideline is expired
+ *           example: false
+ */
+
+/**
+ * @swagger
  * tags:
  *   name: Guidelines
- *   description: API for managing guidelines
  */
 
 /**
@@ -24,24 +52,7 @@ const router = express.Router()
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               cg:
- *                 type: string
- *                 description: The unique guideline code
- *               outbreak:
- *                 type: string
- *                 description: Outbreak ID associated with the guideline
- *               validityPeriod:
- *                 type: number
- *                 description: Validity period of the guideline in days
- *     responses:
- *       201:
- *         description: Guideline created successfully
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
+ *             $ref: '#/components/schemas/Guideline'
  */
 router.post("/", verifyToken, guidelineController.createGuideline)
 
@@ -51,15 +62,6 @@ router.post("/", verifyToken, guidelineController.createGuideline)
  *   get:
  *     summary: Get all guidelines
  *     tags: [Guidelines]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of guidelines retrieved
- *       404:
- *         description: No guidelines found
- *       500:
- *         description: Failed to retrieve guidelines
  */
 router.get("/", verifyToken, guidelineController.getAllGuidelines)
 
@@ -69,8 +71,6 @@ router.get("/", verifyToken, guidelineController.getAllGuidelines)
  *   get:
  *     summary: Get a guideline by its code
  *     tags: [Guidelines]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: cg
  *         in: path
@@ -78,13 +78,6 @@ router.get("/", verifyToken, guidelineController.getAllGuidelines)
  *         schema:
  *           type: string
  *         description: The guideline code
- *     responses:
- *       200:
- *         description: Guideline retrieved
- *       404:
- *         description: Guideline not found
- *       500:
- *         description: Failed to retrieve the guideline
  */
 router.get("/cg/:cg", verifyToken, guidelineController.getGuidelinesByCode)
 
@@ -94,8 +87,6 @@ router.get("/cg/:cg", verifyToken, guidelineController.getGuidelinesByCode)
  *   get:
  *     summary: Get guidelines by status
  *     tags: [Guidelines]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: status
  *         in: path
@@ -103,13 +94,6 @@ router.get("/cg/:cg", verifyToken, guidelineController.getGuidelinesByCode)
  *         schema:
  *           type: string
  *         description: The status of the guidelines (e.g., active, inactive)
- *     responses:
- *       200:
- *         description: Guidelines retrieved
- *       404:
- *         description: No guidelines found
- *       500:
- *         description: Failed to retrieve guidelines
  */
 router.get(
   "/status/:status",
@@ -123,8 +107,6 @@ router.get(
  *   get:
  *     summary: Get guidelines by country and virus
  *     tags: [Guidelines]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: cc
  *         in: path
@@ -138,13 +120,6 @@ router.get(
  *         schema:
  *           type: string
  *         description: The virus code
- *     responses:
- *       200:
- *         description: Guidelines retrieved
- *       404:
- *         description: No guidelines found
- *       500:
- *         description: Failed to retrieve guidelines
  */
 router.get(
   "/cc/cv/:cc/:cv",
@@ -180,15 +155,6 @@ router.get(
  *               validityPeriod:
  *                 type: number
  *                 description: Validity period in days
- *     responses:
- *       200:
- *         description: Guideline updated successfully
- *       400:
- *         description: Bad request
- *       404:
- *         description: Guideline not found
- *       500:
- *         description: Internal server error
  */
 router.put("/:cg", verifyToken, guidelineController.updateGuidelineByCode)
 
@@ -198,8 +164,6 @@ router.put("/:cg", verifyToken, guidelineController.updateGuidelineByCode)
  *   delete:
  *     summary: Delete an expired guideline by code
  *     tags: [Guidelines]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - name: cg
  *         in: path
@@ -207,13 +171,6 @@ router.put("/:cg", verifyToken, guidelineController.updateGuidelineByCode)
  *         schema:
  *           type: string
  *         description: The guideline code
- *     responses:
- *       200:
- *         description: Guideline deleted successfully
- *       400:
- *         description: Guideline not found or not expired
- *       500:
- *         description: Internal server error
  */
 router.delete(
   "/expired/:cg",
@@ -236,13 +193,6 @@ router.delete(
  *         schema:
  *           type: string
  *         description: The guideline code
- *     responses:
- *       200:
- *         description: Guideline deleted successfully
- *       404:
- *         description: Guideline not found
- *       500:
- *         description: Internal server error
  */
 router.delete("/:cg", verifyToken, guidelineController.deleteGuidelineByCode)
 
