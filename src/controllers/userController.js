@@ -2,27 +2,23 @@ import {} from "dotenv/config"
 import jwt from "jsonwebtoken"
 import UserService from "../services/userService.js"
 import logger from "../logger.js"
+import { MESSAGES } from "../utils/responseMessages.js"
+import UserInputDTO from "../DTO/userInputDTO.js"
 
 const secureKey = process.env.SECRET_KEY
-
 class UserController {
   async register(req, res) {
     const { username, password, idCard, name, role } = req.body
     try {
-      const exists = await UserService.checkExists(username, idCard)
+      const inputDTO = new UserInputDTO(req.body)
+      const user = await inputDTO.toUser()
+      const exists = await UserService.checkExists(user.username, user.idCard)
       if (exists) {
-        res.status(400).json({ error: "Duplicate username or idCard." })
+        res.status(400).json({ error: MESSAGES.DUPLICATE_USERNAME_IDCARD })
       } else {
         try {
-          await UserService.saveUser(
-            username,
-            password,
-            idCard,
-            name,
-            role,
-            "active"
-          )
-          res.status(201).json({ message: "User registered successfully!" })
+          await UserService.saveUser(user)
+          res.status(201).json({ message: MESSAGES.USER_REGISTERED })
         } catch (err) {
           if (err.name === "ValidationError") {
             let errorMessage = "Validation Error: "
@@ -32,14 +28,18 @@ class UserController {
             res.status(400).json({ error: errorMessage.trim() })
           } else if (err.code === 11000) {
             res.status(400).json({
-              error: "Duplicate idCard. Please use a unique idCard number.",
+              error: MESSAGES.DUPLICATE_IDCARD,
             })
           }
         }
       }
-    } catch (error) {
-      logger.error("UserController - register: ", error.message)
-      res.send("Error:", error)
+    } catch (err) {
+      logger.error("UserController - register: ", err.message)
+      if (err.message === "MissingRequiredFields") {
+        res.status(400).json({
+          error: MESSAGES.MISSING_REQUIRED_FIELDS,
+        })
+      } else res.status(500).json({ error: MESSAGES.FAILED_REGISTER })
     }
   }
 
@@ -49,7 +49,7 @@ class UserController {
       const user = await UserService.fetchUserByUsername(username)
       if (user) {
         if (user.status !== "active") {
-          res.status(401).json({ error: "Could not login. Inactive user." })
+          res.status(401).json({ error: MESSAGES.INACTIVE_USER })
         } else {
           const hashedPasswordFromDB = user.password
           const passwordsMatch = await UserService.comparePasswords(
@@ -64,17 +64,17 @@ class UserController {
               name: user.name,
             }
 
-            const token = jwt.sign(authData, secureKey, {
-              expiresIn: "1h",
-            })
+            const token = jwt.sign(authData, secureKey)
 
-            res.status(200).json({ userToken: token })
+            res
+              .status(200)
+              .json({ message: MESSAGES.LOGIN_SUCCESS, userToken: token })
           } else {
-            res.status(401).json({ error: "Incorrect username or password" })
+            res.status(401).json({ error: MESSAGES.INVALID_LOGIN })
           }
         }
       } else {
-        res.status(401).json({ error: "User not found" })
+        res.status(401).json({ error: MESSAGES.USER_NOT_FOUND })
       }
     } catch (error) {
       logger.error("UserController - login: ", error.message)
@@ -85,11 +85,22 @@ class UserController {
   async markInactive(req, res) {
     const { username } = req.params
     try {
-      const result = await UserService.markInactive(username)
-      res.status(200).json(result)
+      await UserService.markInactive(username)
+      res.status(200).json({ message: MESSAGES.SUCCESS_INACTIVE })
     } catch (error) {
       logger.error("UserController - markInactive: ", error.message)
-      res.status(500).json({ error: "Error marking user as inactive." })
+      res.status(500).json({ error: MESSAGES.FAILED_INACTIVE })
+    }
+  }
+
+  async markActive(req, res) {
+    const { username } = req.params
+    try {
+      await UserService.markActive(username)
+      res.status(200).json({ message: MESSAGES.SUCCESS_ACTIVE })
+    } catch (error) {
+      logger.error("UserController - markInactive: ", error.message)
+      res.status(500).json({ error: MESSAGES.FAILED_ACTIVE })
     }
   }
 
@@ -97,15 +108,15 @@ class UserController {
     const { username } = req.params
     const { password, idCard, name } = req.body
     try {
-      const result = await UserService.updateUser(username, {
+      await UserService.updateUser(username, {
         password,
         idCard,
         name,
       })
-      res.status(200).json(result)
+      res.status(200).json({ message: MESSAGES.SUCCESS_UPDATE_USER })
     } catch (error) {
       logger.error("UserController - updateUser: ", error.message)
-      res.status(500).json({ error: "Error updating user." })
+      res.status(500).json({ error: MESSAGES.FAILED_UPDATE_USER })
     }
   }
 }

@@ -12,8 +12,13 @@ const ZoneSchema = new Schema(
       ],
       minlength: [2, "Zone code must be exatcly 2 characters"],
       maxlength: [2, "Zone code must be exatcly 2 characters"],
+      lowercase: true,
     },
-    name: String,
+    name: {
+      type: String,
+      lowercase: true,
+      set: (value) => value?.replace(/\s+/g, " ").trim(),
+    },
   },
   {
     collection: "zones",

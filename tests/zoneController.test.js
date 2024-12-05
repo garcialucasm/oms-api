@@ -2,10 +2,38 @@ import request from "supertest"
 
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { adminToken } from "./setup/testSetup.js"
+import { adminToken, employeeToken } from "./setup/testSetup.js"
 
 describe("Zone API Tests with Authentication", () => {
+  describe("GET /api/zones", () => {
+    test("should return 404 for no zones found", async () => {
+      const response = await request(app)
+        .get("/api/zones")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.NO_ZONES_FOUND)
+    })
+  })
+
   describe("POST /api/zones", () => {
+    test("should not create a new zone without authentication", async () => {
+      const newZone = { cz: "Z1", name: "ZoneTest1" }
+      const response = await request(app).post("/api/zones").send(newZone)
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
+    test("should fail to create a new zone with employee logged in", async () => {
+      const newZone = { cz: "Z1", name: "ZoneTest1" }
+
+      const response = await request(app)
+        .post("/api/zones")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newZone)
+      expect(response.status).toBe(403)
+    })
+
     test("should create a new zone", async () => {
       const newZone = { cz: "Z1", name: "ZoneTest1" }
 
@@ -14,8 +42,8 @@ describe("Zone API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send(newZone)
       expect(response.status).toBe(201)
-      expect(response.body.data.cz).toBe("Z1")
-      expect(response.body.data.name).toBe("ZoneTest1")
+      expect(response.body.data.cz).toBe("z1")
+      expect(response.body.data.name).toBe("zonetest1")
     })
 
     test("should not create a duplicate zone code or name", async () => {
@@ -69,6 +97,15 @@ describe("Zone API Tests with Authentication", () => {
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
     })
+
+    test("should return all zones with employee logged in", async () => {
+      const response = await request(app)
+        .get("/api/zones")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
   })
 
   describe("GET /api/zones/name/:name", () => {
@@ -78,7 +115,7 @@ describe("Zone API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.name).toBe("ZoneTest1")
+      expect(response.body.data.name).toBe("zonetest1")
     })
 
     test("should return 404 if the zone is not found by name", async () => {
@@ -98,7 +135,7 @@ describe("Zone API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
-      expect(response.body.data.cz).toBe("Z1")
+      expect(response.body.data.cz).toBe("z1")
     })
 
     test("should return 404 if the zone is not found by code", async () => {
@@ -112,6 +149,27 @@ describe("Zone API Tests with Authentication", () => {
   })
 
   describe("PUT /api/zones/:cz", () => {
+    test("should not update a zone without authentication", async () => {
+      const updatedZoneData = { name: "UpdatedZoneTest1", cz: "Z1" }
+
+      const response = await request(app)
+        .put("/api/zones/Z1")
+        .send(updatedZoneData)
+
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
+    test("should not update a zone with employee logged in", async () => {
+      const updatedZoneData = { name: "UpdatedZoneTest1", cz: "Z1" }
+
+      const response = await request(app)
+        .put("/api/zones/Z1")
+        .send(updatedZoneData)
+
+      expect(response.status).toBe(403)
+    })
+
     test("should update an existing zone", async () => {
       const updatedZoneData = { name: "UpdatedZoneTest1", cz: "Z1" }
 
@@ -121,7 +179,7 @@ describe("Zone API Tests with Authentication", () => {
         .send(updatedZoneData)
 
       expect(response.status).toBe(201)
-      expect(response.body.data.name).toBe("UpdatedZoneTest1")
+      expect(response.body.data.name).toBe("updatedzonetest1")
     })
 
     test("should return 400 if zone to update is not found", async () => {
@@ -138,6 +196,21 @@ describe("Zone API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/zones/:cz", () => {
+    test("should not delete a zone without authentication", async () => {
+      const response = await request(app).delete("/api/zones/Z1")
+
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
+    test("should fail to delete a zone by its code with employee logged in", async () => {
+      const response = await request(app)
+        .delete("/api/zones/Z1")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(403)
+    })
+
     test("should delete a zone by its code", async () => {
       const response = await request(app)
         .delete("/api/zones/Z1")

@@ -1,7 +1,7 @@
 import request from "supertest"
 
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { adminToken } from "./setup/testSetup.js"
+import { adminToken, employeeToken } from "./setup/testSetup.js"
 import { app } from "../src/app.js"
 
 describe("Country API Tests with Authentication", () => {
@@ -63,8 +63,8 @@ describe("Country API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send(newCountry)
       expect(countryResponse.status).toBe(201)
-      expect(countryResponse.body.data.cc).toBe("PT")
-      expect(countryResponse.body.data.name).toBe("PORTUGAL")
+      expect(countryResponse.body.data.cc).toBe("pt")
+      expect(countryResponse.body.data.name).toBe("portugal")
     })
 
     test("should not create an already existing country name", async () => {
@@ -75,8 +75,8 @@ describe("Country API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
         .send(newCountry)
       expect(firstResponse.status).toBe(201)
-      expect(firstResponse.body.data.cc).toBe("BR")
-      expect(firstResponse.body.data.name).toBe("BRAZIL")
+      expect(firstResponse.body.data.cc).toBe("br")
+      expect(firstResponse.body.data.name).toBe("brazil")
 
       const secondResponse = await request(app)
         .post("/api/countries")
@@ -95,6 +95,16 @@ describe("Country API Tests with Authentication", () => {
         .send(newCountry)
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(MESSAGES.INVALID_COUNTRY_NAME)
+    })
+
+    test("should not create a country with employee logged in", async () => {
+      const newCountry = { name: "Greece", zone }
+
+      const response = await request(app)
+        .post("/api/countries")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newCountry)
+      expect(response.status).toBe(403)
     })
 
     test("should return validation error for missing name field", async () => {
@@ -129,6 +139,15 @@ describe("Country API Tests with Authentication", () => {
       expect(response.status).toBe(200)
       expect(Array.isArray(response.body.data)).toBe(true)
     })
+
+    test("should return all countries with employee logged in", async () => {
+      const response = await request(app)
+        .get("/api/countries")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
   })
 
   describe("GET /api/countries/cc/:cc", () => {
@@ -138,7 +157,7 @@ describe("Country API Tests with Authentication", () => {
         .set("Authorization", `Bearer ${adminToken}`)
 
       expect(response.status).toBe(200)
-      expect(response.body.data[0].cc).toBe("PT")
+      expect(response.body.data[0].cc).toBe("pt")
     })
 
     test("should return 404 if the country is not found", async () => {
@@ -178,6 +197,20 @@ describe("Country API Tests with Authentication", () => {
   })
 
   describe("PUT /api/countries/:cc", () => {
+    test("should fail to update an existing country with employee logged in", async () => {
+      const updatedCountryData = {
+        name: "Greece",
+        zone: zone,
+      }
+
+      const response = await request(app)
+        .put("/api/countries/cc/PT")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(updatedCountryData)
+
+      expect(response.status).toBe(403)
+    })
+
     test("should update an existing country", async () => {
       const updatedCountryData = {
         name: "Greece",
@@ -191,8 +224,8 @@ describe("Country API Tests with Authentication", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.message).toBe(MESSAGES.COUNTRY_UPDATED)
-      expect(response.body.data[0].name).toBe("GREECE")
-      expect(response.body.data[0].cc).toBe("GR")
+      expect(response.body.data[0].name).toBe("greece")
+      expect(response.body.data[0].cc).toBe("gr")
     })
 
     test("should return 400 when updating with invalid zone", async () => {
@@ -224,6 +257,32 @@ describe("Country API Tests with Authentication", () => {
       expect(response.status).toBe(400)
     })
 
+    test("should not update when new country name already exists", async () => {
+      const newCountryData = {
+        name: "Spain",
+        zone: zone,
+      }
+
+      const toUpdateCountryData = {
+        name: "Brazil",
+        zone: zone,
+      }
+
+      const responseNewCountry = await request(app)
+        .post("/api/countries")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(newCountryData)
+
+      expect(responseNewCountry.status).toBe(201)
+
+      const responseUpdate = await request(app)
+        .put("/api/countries/cc/es")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(toUpdateCountryData)
+
+      expect(responseUpdate.status).toBe(400)
+    })
+
     test("should not update a country without authentication", async () => {
       const toUpdateCountryData = {
         name: "Canada",
@@ -240,6 +299,14 @@ describe("Country API Tests with Authentication", () => {
   })
 
   describe("DELETE /api/countries/cc/:cc", () => {
+    test("should fail to delete a country by its code with employee logged in", async () => {
+      const response = await request(app)
+        .delete("/api/countries/cc/GR")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(403)
+    })
+
     test("should delete a country by its code", async () => {
       const response = await request(app)
         .delete("/api/countries/cc/GR")

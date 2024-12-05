@@ -3,7 +3,7 @@ import request from "supertest"
 import Outbreak from "../src/models/outbreakModel.js"
 import { app, server } from "../src/app.js"
 import { MESSAGES } from "../src/utils/responseMessages.js"
-import { adminToken } from "./setup/testSetup.js"
+import { adminToken, employeeToken } from "./setup/testSetup.js"
 
 describe("Guideline API Tests with Authentication", () => {
   beforeAll(async () => {
@@ -74,389 +74,476 @@ describe("Guideline API Tests with Authentication", () => {
     expect(outbreakResponse1.status).toBe(201)
   })
 
-describe("GET /api/guidelines", () => {
-  test("should return 404 for no found guidelines", async () => {
-    const response = await request(app)
-      .get("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
+  describe("GET /api/guidelines", () => {
+    test("should return 404 for no found guidelines", async () => {
+      const response = await request(app)
+        .get("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(404)
-    expect(Array.isArray(response.body.data)).toBe(false)
+      expect(response.status).toBe(404)
+      expect(Array.isArray(response.body.data)).toBe(false)
+    })
   })
-})
 
-describe("POST /api/guidelines", () => {
-  test("should create a new guideline", async () => {
-    const newGuideline = {
-      cg: "11GG",
-      outbreak: "1O",
-      validityPeriod: 10,
-    }
+  describe("POST /api/guidelines", () => {
+    test("should not create a new guideline without authentication", async () => {
+      const newGuideline = {
+        cg: "11GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
 
-    const guidelineOutbreak = await Outbreak.findOne({
-      co: newGuideline.outbreak,
+      const response = await request(app)
+        .post("/api/guidelines")
+        .send(newGuideline)
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
     })
 
-    const response = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(newGuideline)
-    expect(response.status).toBe(201)
-    expect(response.body.data.cg).toBe("11GG")
-    expect(response.body.data.outbreak).toBe(guidelineOutbreak._id.toString())
-    expect(response.body.data.validityPeriod).toBe(10)
+    test("should create a new guideline", async () => {
+      const newGuideline = {
+        cg: "11GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(newGuideline)
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("11gg")
+      expect(response.body.data.validityPeriod).toBe(10)
+    })
+
+    test("should create a new guideline with employee logged in", async () => {
+      const newGuideline = {
+        cg: "77XX",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(newGuideline)
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("77xx")
+      expect(response.body.data.validityPeriod).toBe(10)
+    })
+
+    test("should not create a duplicate guideline code", async () => {
+      const newGuideline = {
+        cg: "22GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const firstResponse = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(newGuideline)
+      expect(firstResponse.status).toBe(201)
+
+      const secondResponse = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(newGuideline)
+      expect(secondResponse.status).toBe(400)
+      expect(secondResponse.body.error).toBe(MESSAGES.DUPLICATE_GUIDELINE)
+    })
+
+    test("should return validation error for invalid guideline code", async () => {
+      const invalidGuideline = {
+        cg: "GG11",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(invalidGuideline)
+      expect(response.status).toBe(400)
+      expect(response.body.error.message).toContain(
+        "Guideline code must have 2 numbers and 2 letters"
+      )
+    })
+
+    test("should return 400 for no matching outbreak code", async () => {
+      const unknownOutbreak = {
+        cg: "22GG",
+        outbreak: "3O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(unknownOutbreak)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
+    })
+
+    test("should return validation error for missing fields", async () => {
+      const invalidGuideline = { cg: "33GG" }
+
+      const response = await request(app)
+        .post("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(invalidGuideline)
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
+    })
   })
 
-  test("should not create a duplicate guideline code", async () => {
-    const newGuideline = {
-      cg: "22GG",
-      outbreak: "1O",
-      validityPeriod: 10,
-    }
+  describe("GET /api/guidelines", () => {
+    test("should return all guidelines", async () => {
+      const response = await request(app)
+        .get("/api/guidelines")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    const firstResponse = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(newGuideline)
-    expect(firstResponse.status).toBe(201)
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
 
-    const secondResponse = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(newGuideline)
-    expect(secondResponse.status).toBe(400)
-    expect(secondResponse.body.error).toBe(MESSAGES.DUPLICATE_GUIDELINE)
+    test("should return all guidelines with employee logged in", async () => {
+      const response = await request(app)
+        .get("/api/guidelines")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
   })
 
-  test("should return validation error for invalid guideline code", async () => {
-    const invalidGuideline = {
-      cg: "GG11",
-      outbreak: "1O",
-      validityPeriod: 10,
-    }
+  describe("GET /api/guidelines/cg/:cg", () => {
+    test("should retrieve a guideline by its code", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cg/11GG")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    const response = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(invalidGuideline)
-    expect(response.status).toBe(400)
-    expect(response.body.error.message).toContain(
-      "Guideline code must have 2 numbers and 2 letters"
-    )
+      expect(response.status).toBe(200)
+      expect(response.body.data.cg).toBe("11gg")
+    })
+
+    test("should return 404 if the guideline is not found by code", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cg/33GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
+    })
   })
 
-  test("should return 400 for no matching outbreak code", async () => {
-    const unknownOutbreak = {
-      cg: "22GG",
-      outbreak: "3O",
-      validityPeriod: 10,
-    }
+  describe("GET /api/guideline/status/:status", () => {
+    test("should retrieve a guideline by its status", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/status/false")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    const response = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(unknownOutbreak)
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
+
+    test("should return 404 if the guideline is not found by status", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/status/true")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_STATUS)
+    })
+
+    test("should return 400 if the status parameter is invalid", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/status/1111")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.INVALID_STATUS_PARAMETER)
+    })
   })
 
-  test("should return validation error for missing fields", async () => {
-    const invalidGuideline = { cg: "33GG" }
+  describe("GET /api/guideline/cc/cv/:cc/:cv", () => {
+    test("should retrieve a guideline by country and virus", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cc/cv/PT/VV11")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    const response = await request(app)
-      .post("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(invalidGuideline)
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
-  })
-})
+      expect(response.status).toBe(200)
+      expect(Array.isArray(response.body.data)).toBe(true)
+    })
 
-describe("GET /api/guidelines", () => {
-  test("should return all guidelines", async () => {
-    const response = await request(app)
-      .get("/api/guidelines")
-      .set("Authorization", `Bearer ${adminToken}`)
+    test("should return 400 due to non existent country", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cc/cv/FR/VV11")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(200)
-    expect(Array.isArray(response.body.data)).toBe(true)
-  })
-})
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
+    })
 
-describe("GET /api/guidelines/cg/:cg", () => {
-  test("should retrieve a guideline by its code", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cg/11GG")
-      .set("Authorization", `Bearer ${adminToken}`)
+    test("should return 400 due to non existent virus", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cc/cv/PT/AA11")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(200)
-    expect(response.body.data.cg).toBe("11GG")
-  })
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
+    })
 
-  test("should return 404 if the guideline is not found by code", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cg/33GG")
-      .set("Authorization", `Bearer ${adminToken}`)
+    test("should return 400 due to non existent outbreak", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cc/cv/PT/VV22")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(404)
-    expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
-  })
-})
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND)
+    })
 
-describe("GET /api/guideline/status/:status", () => {
-  test("should retrieve a guideline by its status", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/status/false")
-      .set("Authorization", `Bearer ${adminToken}`)
+    test("should return 400 due to non existent guideline", async () => {
+      const response = await request(app)
+        .get("/api/guidelines/cc/cv/ES/VV11")
+        .set("Authorization", `Bearer ${adminToken}`)
 
-    expect(response.status).toBe(200)
-    expect(Array.isArray(response.body.data)).toBe(true)
+      expect(response.status).toBe(404)
+      expect(Array.isArray(response.body.data)).toBe(false)
+    })
   })
 
-  test("should return 404 if the guideline is not found by status", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/status/true")
-      .set("Authorization", `Bearer ${adminToken}`)
+  describe("PUT /api/guidelines/:cg", () => {
+    test("should not update a guideline without authentication", async () => {
+      const updatedGuidelineData = {
+        cg: "12GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
 
-    expect(response.status).toBe(404)
-    expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_STATUS)
+      const response = await request(app)
+        .put("/api/guidelines/11GG")
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
+    test("should update an existing guideline code", async () => {
+      const updatedGuidelineData = {
+        cg: "12GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/11GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("12gg")
+    })
+
+    test("should find guideline with updated code", async () => {
+      const response = await request(app).get("/api/guidelines/cg/12GG")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.cg).toBe("12gg")
+    })
+
+    test("should update an existing guideline code with employee logged in", async () => {
+      const updatedGuidelineData = {
+        cg: "88XX",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/77XX")
+        .set("Authorization", `Bearer ${employeeToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(201)
+      expect(response.body.data.cg).toBe("88xx")
+    })
+
+    test("should find guideline with updated code by employee logged in", async () => {
+      const response = await request(app).get("/api/guidelines/cg/88XX")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.cg).toBe("88xx")
+    })
+
+    test("should update an existing guideline outbreak", async () => {
+      const updatedGuidelineData = {
+        cg: "12GG",
+        outbreak: "2O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(201)
+      expect(response.body.data.outbreak.co).toBe("2o")
+    })
+
+    test("should find guideline with updated outbreak", async () => {
+      const response = await request(app).get("/api/guidelines/cg/12GG")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.outbreak.co).toBe("2o")
+    })
+
+    test("should update an existing guideline validity period", async () => {
+      const updatedGuidelineData = {
+        cg: "12GG",
+        outbreak: "2O",
+        validityPeriod: 15,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(201)
+      expect(response.body.data.validityPeriod).toBe(15)
+    })
+
+    test("should find guideline with updated validity period", async () => {
+      const response = await request(app).get("/api/guidelines/cg/12GG")
+
+      expect(response.status).toBe(200)
+      expect(response.body.data.validityPeriod).toBe(15)
+    })
+
+    test("should return 400 if guideline to update is not found", async () => {
+      const updatedGuidelineData = {
+        cg: "13GG",
+        outbreak: "1O",
+        validityPeriod: 10,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/11GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
+    })
+
+    test("should return 400 if guideline to update has missing fields", async () => {
+      const updatedGuidelineData = {
+        cg: "13GG",
+        outbreak: "1O",
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
+    })
+
+    test("should return 400 if guideline to update has duplicate guideline code", async () => {
+      const updatedGuidelineData = {
+        cg: "22GG",
+        outbreak: "1O",
+        validityPeriod: 15,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.DUPLICATE_GUIDELINE)
+    })
+
+    test("should return 400 if updated outbreak doesn't exist", async () => {
+      const updatedGuidelineData = {
+        cg: "12GG",
+        outbreak: "5O",
+        validityPeriod: 15,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
+    })
+
+    test("should return 400 if updated guideline code isn't valid", async () => {
+      const updatedGuidelineData = {
+        cg: "GG12",
+        outbreak: "2O",
+        validityPeriod: 15,
+      }
+
+      const response = await request(app)
+        .put("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(updatedGuidelineData)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error.message).toContain(
+        "Guideline code must have 2 numbers and 2 letters"
+      )
+    })
   })
 
-  test("should return 400 if the status parameter is invalid", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/status/1111")
-      .set("Authorization", `Bearer ${adminToken}`)
+  describe("DELETE /api/guidelines", () => {
+    test("should not delete a guideline without authentication", async () => {
+      const response = await request(app).delete("/api/guidelines/11GG")
 
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.INVALID_STATUS_PARAMETER)
+      expect(response.status).toBe(403)
+      expect(response.body.error).toBe(MESSAGES.AUTH_REQUIRED)
+    })
+
+    test("should return 400 if guideline to delete is not expired", async () => {
+      const response = await request(app)
+        .delete("/api/guidelines/expired/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_EXPIRED)
+    })
+
+    test("should not delete a guideline by its code with employee logged in", async () => {
+      const response = await request(app)
+        .delete("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${employeeToken}`)
+
+      expect(response.status).toBe(403)
+    })
+
+    test("should delete a guideline by its code", async () => {
+      const response = await request(app)
+        .delete("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(200)
+      expect(response.body.message).toBe(MESSAGES.GUIDELINE_DELETED)
+    })
+
+    test("should return 400 if guideline to delete is not found", async () => {
+      const response = await request(app)
+        .delete("/api/guidelines/12GG")
+        .set("Authorization", `Bearer ${adminToken}`)
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
+    })
   })
-})
-
-describe("GET /api/guideline/cc/cv/:cc/:cv", () => {
-  test("should retrieve a guideline by country and virus", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cc/cv/PT/VV11")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(200)
-    expect(Array.isArray(response.body.data)).toBe(true)
-  })
-
-  test("should return 400 due to non existent country", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cc/cv/FR/VV11")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.COUNTRY_NOT_FOUND)
-  })
-  
-  test("should return 400 due to non existent virus", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cc/cv/PT/AA11")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.VIRUS_NOT_FOUND_BY_CODE)
-  }) 
-
-  test("should return 400 due to non existent outbreak", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cc/cv/PT/VV22")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND)
-  })
-  
-  test("should return 400 due to non existent guideline", async () => {
-    const response = await request(app)
-      .get("/api/guidelines/cc/cv/ES/VV11")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(404)
-    expect(Array.isArray(response.body.data)).toBe(false)
-  }) 
-})
-
-describe("PUT /api/guidelines/:cg", () => {
-  test("should update an existing guideline code", async () => {
-    const updatedGuidelineData = {
-      cg: "12GG",
-      outbreak: "1O",
-      validityPeriod: 10,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/11GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(201)
-    expect(response.body.data.cg).toBe("12GG")
-  })
-
-  test("should find guideline with updated code", async () => {
-    const response = await request(app).get("/api/guidelines/cg/12GG")
-
-    expect(response.status).toBe(200)
-    expect(response.body.data.cg).toBe("12GG")
-  })
-
-  test("should update an existing guideline outbreak", async () => {
-    const updatedGuidelineData = {
-      cg: "12GG",
-      outbreak: "2O",
-      validityPeriod: 10,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(201)
-    expect(response.body.data.outbreak.co).toBe("2O")
-  })
-
-  test("should find guideline with updated outbreak", async () => {
-    const response = await request(app).get("/api/guidelines/cg/12GG")
-
-    expect(response.status).toBe(200)
-    expect(response.body.data.outbreak.co).toBe("2O")
-  })
-
-  test("should update an existing guideline validity period", async () => {
-    const updatedGuidelineData = {
-      cg: "12GG",
-      outbreak: "2O",
-      validityPeriod: 15,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(201)
-    expect(response.body.data.validityPeriod).toBe(15)
-  })
-
-  test("should find guideline with updated validity period", async () => {
-    const response = await request(app).get("/api/guidelines/cg/12GG")
-
-    expect(response.status).toBe(200)
-    expect(response.body.data.validityPeriod).toBe(15)
-  })
-
-  test("should return 400 if guideline to update is not found", async () => {
-    const updatedGuidelineData = {
-      cg: "13GG",
-      outbreak: "1O",
-      validityPeriod: 10,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/11GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
-  })
-
-  test("should return 400 if guideline to update has missing fields", async () => {
-    const updatedGuidelineData = {
-      cg: "13GG",
-      outbreak: "1O",
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
-  })
-
-  test("should return 400 if guideline to update has duplicate guideline code", async () => {
-    const updatedGuidelineData = {
-      cg: "22GG",
-      outbreak: "1O",
-      validityPeriod: 15,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.DUPLICATE_GUIDELINE)
-  })
-
-  test("should return 400 if updated outbreak doesn't exist", async () => {
-    const updatedGuidelineData = {
-      cg: "12GG",
-      outbreak: "5O",
-      validityPeriod: 15,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.OUTBREAK_NOT_FOUND_BY_CODE)
-  })
-
-  test("should return 400 if updated guideline code isn't valid", async () => {
-    const updatedGuidelineData = {
-      cg: "GG12",
-      outbreak: "2O",
-      validityPeriod: 15,
-    }
-
-    const response = await request(app)
-      .put("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-      .send(updatedGuidelineData)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error.message).toContain(
-      "Guideline code must have 2 numbers and 2 letters"
-    )
-  })
-})
-
-describe("DELETE /api/guidelines", () => {
-  test("should return 400 if guideline to delete is not expired", async () => {
-    const response = await request(app)
-      .delete("/api/guidelines/expired/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_EXPIRED)
-  })
-
-  test("should delete a guideline by its code", async () => {
-    const response = await request(app)
-      .delete("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(200)
-    expect(response.body.message).toBe(MESSAGES.GUIDELINE_DELETED)
-  })
-
-  test("should return 400 if guideline to delete is not found", async () => {
-    const response = await request(app)
-      .delete("/api/guidelines/12GG")
-      .set("Authorization", `Bearer ${adminToken}`)
-
-    expect(response.status).toBe(400)
-    expect(response.body.error).toBe(MESSAGES.GUIDELINE_NOT_FOUND_BY_CODE)
-  })
-})
 })

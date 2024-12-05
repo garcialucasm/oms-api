@@ -19,7 +19,8 @@ export const MESSAGES = {
   FAILED_TO_RETRIEVE_COUNTRIES: "Failed to retrieve countries",
   FAILED_TO_RETRIEVE_COUNTRY_BY_CODE: "Failed to retrieve country by code",
   FAILED_TO_RETRIEVE_COUNTRY_BY_NAME: "Failed to retrieve country by name",
-  FAILED_TO_RETRIEVE_INFO_BY_COUNTRY_CODE: "Failed to retrieve all info by country code",
+  FAILED_TO_RETRIEVE_INFO_BY_COUNTRY_CODE:
+    "Failed to retrieve all info by country code",
   FAILED_TO_UPDATE_COUNTRY: "Failed to update country",
   FAILED_TO_DELETE_COUNTRY: "Failed to delete country",
   /* -------------------------------------------------------------------------- */
@@ -60,14 +61,15 @@ export const MESSAGES = {
   OUTBREAKS_RETRIEVED: "Outbreaks retrieved successfully",
   /* -------------------------------------------------------------------------- */
 
-
   /* ------------------------- Outbreaks Error messages ------------------------- */
-  DUPLICATE_OUTBREAK: "Duplicate outbreak code. Please use a unique value for this field",
+  DUPLICATE_OUTBREAK:
+    "Duplicate outbreak code. Please use a unique value for this field",
   OUTBREAK_ALREADY_EXISTS: "That outbreak already exists.",
   NO_OUTBREAKS_FOUND: "No outbreaks found",
   OUTBREAK_NOT_FOUND_BY_CODE:
     "Outbreak not found with the given outbreak code.",
-  OUTBREAK_CODE_VALIDATION_ERROR:"Validation Error: Outbreak code must start with 1 numerical character and end with 1 letter.",
+  OUTBREAK_CODE_VALIDATION_ERROR:
+    "Validation Error: Outbreak code must start with 1 numerical character and end with 1 letter.",
   OUTBREAK_NOT_FOUND: "Outbreak not found.",
   FAILED_TO_CREATE_OUTBREAK: "Failed to create outbreak",
   FAILED_TO_RETRIEVE_OUTBREAKS: "Failed to retrieve outbreaks",
@@ -99,7 +101,8 @@ export const MESSAGES = {
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Zone Error messages ------------------------- */
-  DUPLICATE_ZONE: "Duplicate zone code or name. Please use unique values for both these fields",
+  DUPLICATE_ZONE:
+    "Duplicate zone code or name. Please use unique values for both these fields",
   FAILED_TO_CREATE_ZONE: "Failed to create zone",
   ZONE_NOT_FOUND_BY_CODE: "Zone not found with the given zone code.",
   ZONE_SEARCHED_NOT_FOUND: "Zone not found with the searched zone code",
@@ -113,7 +116,7 @@ export const MESSAGES = {
   FAILED_TO_DELETE_ZONE: "Failed to delete zone",
   CANNOT_DELETE_COUNTRIES_ASSOCIATED:
     "Cannot delete zone because it has countries associated.",
-    
+
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Guideline Success messages ------------------------- */
@@ -122,7 +125,8 @@ export const MESSAGES = {
   GUIDELINE_RETRIEVED: "Guideline retrieved successfully",
   GUIDELINE_RETRIEVED_BY_CODE: "Guideline retrieved by code.",
   GUIDELINES_RETRIEVED_BY_STATUS: "Guidelines retrieved by status",
-  GUIDELINES_RETRIEVED_BY_COUNTRY_AND_VIRUS: "Guidelines retrieved by country and virus code",
+  GUIDELINES_RETRIEVED_BY_COUNTRY_AND_VIRUS:
+    "Guidelines retrieved by country and virus code",
   GUIDELINE_UPDATED: "Guideline updated successfully",
   GUIDELINE_DELETED: "Guideline deleted successfully",
   /* -------------------------------------------------------------------------- */
@@ -130,11 +134,15 @@ export const MESSAGES = {
   /* ------------------------- Guideline Error messages ------------------------- */
   DUPLICATE_GUIDELINE: "Duplicate guideline code. Please use unique values",
   FAILED_TO_CREATE_GUIDELINE: "Failed to create guideline",
-  GUIDELINE_NOT_FOUND_BY_CODE: "Guideline not found with the given guideline code.",
-  GUIDELINE_SEARCHED_NOT_FOUND: "Guideline not found with the searched guideline code",
+  GUIDELINE_NOT_FOUND_BY_CODE:
+    "Guideline not found with the given guideline code.",
+  GUIDELINE_SEARCHED_NOT_FOUND:
+    "Guideline not found with the searched guideline code",
   NO_GUIDELINES_FOUND: "No guidelines found",
-  GUIDELINE_NOT_FOUND_BY_STATUS: "Guideline not found with the given guideline status",
-  GUIDELINE_NOT_FOUND_BY_OUTBREAK: "Guideline not found with the outbreak that matches the country and virus given",
+  GUIDELINE_NOT_FOUND_BY_STATUS:
+    "Guideline not found with the given guideline status",
+  GUIDELINE_NOT_FOUND_BY_OUTBREAK:
+    "Guideline not found with the outbreak that matches the country and virus given",
   INVALID_STATUS_PARAMETER: "Invalid search parameter. Try true or false",
   GUIDELINE_NOT_EXPIRED: "Cannot delete guideline if not expired",
   FAILED_TO_RETRIEVE_GUIDELINES: "Failed to retrieve guidelines",
@@ -142,6 +150,26 @@ export const MESSAGES = {
   FAILED_TO_RETRIEVE_GUIDELINES_BY_STATUS: "Failed to retrieve guidelineS",
   FAILED_TO_UPDATE_GUIDELINE: "Failed to update guideline",
   FAILED_TO_DELETE_GUIDELINE: "Failed to delete guideline",
+  /* -------------------------------------------------------------------------- */
+
+  /* ------------------------- User Success messages ------------------------- */
+  USER_REGISTERED: "User registered successfully!",
+  SUCCESS_INACTIVE: "User marked inactive successfully",
+  SUCCESS_ACTIVE: "User marked active successfully",
+  SUCCESS_UPDATE_USER: "User updated!",
+  LOGIN_SUCCESS: "Logged in successfully",
+  /* -------------------------------------------------------------------------- */
+
+  /* ------------------------- User Error messages ------------------------- */
+  DUPLICATE_IDCARD: "Duplicate idCard. Please use a unique idCard number.",
+  DUPLICATE_USERNAME_IDCARD: "Duplicate username or idCard.",
+  FAILED_REGISTER: "Failed to register user",
+  INACTIVE_USER: "Could not login. Inactive user.",
+  INVALID_LOGIN: "Incorrect username or password",
+  USER_NOT_FOUND: "User not found",
+  FAILED_INACTIVE: "Error marking user as inactive.",
+  FAILED_ACTIVE: "Error marking user as active.",
+  FAILED_UPDATE_USER: "Failed to update user",
   /* -------------------------------------------------------------------------- */
 
   /* ------------------------- Common Error messages ------------------------- */

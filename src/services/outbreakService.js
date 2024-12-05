@@ -1,6 +1,7 @@
 import Outbreak from "../models/outbreakModel.js"
 import Virus from "../models/virusModel.js"
 import Zone from "../models/zoneModel.js"
+import Country from "../models/countryModel.js"
 import Guideline from "../models/guidelineModel.js"
 
 class OutbreakService {
@@ -27,7 +28,7 @@ class OutbreakService {
   }
 
   async listByOutbreak(co) {
-    const outbreak = await Outbreak.findOne({ co:co })
+    const outbreak = await Outbreak.findOne({ co: co })
       .populate("virus")
       .populate("zone")
     if (!outbreak) {
@@ -51,6 +52,27 @@ class OutbreakService {
     return outbreaks
   }
 
+  async listByVirusAndCondition(cv, condition) {
+    if (condition !== "active" && condition !== "occurred")
+      throw new Error("InvalidParams")
+
+    const virus = await Virus.findOne({ cv: cv })
+    if (!virus) {
+      throw new Error("VirusNotFound")
+    }
+
+    const outbreaks = await Outbreak.find({
+      virus: virus._id,
+      condition: condition,
+    })
+      .populate("virus")
+      .populate("zone")
+    if (outbreaks.length === 0) {
+      throw new Error("OutbreakNotFound")
+    }
+    return outbreaks
+  }
+
   async listByZone(cz) {
     const zone = await Zone.findOne({ cz: cz })
     if (!zone) {
@@ -63,6 +85,20 @@ class OutbreakService {
     if (outbreaks.length === 0) {
       throw new Error("OutbreakNotFound")
     }
+    return outbreaks
+  }
+
+  async listByCountry(cc) {
+    const country = await Country.findOne({ cc: cc })
+    if (!country) {
+      throw new Error("CountryNotFound")
+    }
+
+    const outbreaks = await Outbreak.find({
+      zone: country.zone,
+      condition: "active",
+    })
+    if (outbreaks.length === 0) throw new Error("OutbreakNotFound")
     return outbreaks
   }
 
@@ -138,7 +174,6 @@ class OutbreakService {
   }
 
   async updateByZoneCodeVirusCode(cz, cv, outbreakModel) {
-    console.log(cz)
     //Validação para verificar se existe algum virus com cv, zona com cz e outbreak com o par
     const virus = await Virus.findOne({ cv: cv })
     if (!virus) {

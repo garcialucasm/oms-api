@@ -7,14 +7,14 @@ const CountrySchema = new Schema(
       required: [true, "Country code is required"],
       unique: true,
       match: [/^[A-Za-z]{2}$/, "Country code must have exactly 2 letters"],
-      uppercase: true,
+      lowercase: true,
     },
     name: {
       type: String,
       required: [true, "Country name is required"],
       unique: true,
       trim: true,
-      uppercase: true,
+      lowercase: true,
     },
     zone: {
       type: Schema.Types.ObjectId,
