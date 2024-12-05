@@ -1,6 +1,7 @@
 import {} from "dotenv/config"
 import mongoose from "mongoose"
 import express from "express"
+import { swaggerUi, specs } from "./swagger.js"
 
 import { virusRoutes } from "./routes/virusRoutes.js"
 import { outbreakRoutes } from "./routes/outbreakRoutes.js"
@@ -38,6 +39,8 @@ app.use("/api/countries", countryRoutes)
 app.use("/api/outbreaks", outbreakRoutes)
 app.use("/api/guidelines", guidelineRoutes)
 app.use("/api/auth", userRoutes)
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs))
 
 GuidelineService.updateValidity()
 
