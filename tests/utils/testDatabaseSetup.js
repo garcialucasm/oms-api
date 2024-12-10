@@ -7,26 +7,38 @@ import logger from "../../src/logger.js"
 
 const initializeTestDatabase = async () => {
   const dbPath = path.resolve(process.env.DB_SQLITE_TEST)
-  const saltRounds = process.env.SALT_ROUNDS | 10
-
-  /* ----------------- Drop the existing database if it exists ---------------- */
-  if (fs.existsSync(dbPath)) {
-    try {
-      fs.unlinkSync(dbPath)
-      logger.info("Existing database dropped.")
-    } catch (err) {
-      logger.error(
-        "Error dropping existing sqlite database file: ",
-        err.message
-      )
-    }
-  }
+  const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10
 
   /* ------------------------- Create sqlite database ------------------------- */
   const db = new sqlite3.Database(
     dbPath,
     sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
   )
+
+  /* ---------------- Check if 'users' table exists and drop it ---------------- */
+  await new Promise((resolve, reject) => {
+    db.get(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='users';`,
+      (err, row) => {
+        if (err) {
+          logger.error("Error checking for 'users' table: ", err.message)
+          reject(`Error checking for 'users' table: ${err.message}`)
+        } else if (row) {
+          db.run(`DROP TABLE IF EXISTS users;`, (err) => {
+            if (err) {
+              logger.error("Error dropping 'users' table: ", err.message)
+              reject(`Error dropping 'users' table: ${err.message}`)
+            } else {
+              logger.info("'users' table dropped.")
+              resolve()
+            }
+          })
+        } else {
+          resolve()
+        }
+      }
+    )
+  })
 
   /* -------------------------- Force file creation -------------------------- */
   await new Promise((resolve, reject) => {
@@ -77,7 +89,7 @@ const initializeTestDatabase = async () => {
   const hashedPasswordAdmin = await bcrypt.hash("admin123", saltRounds)
   const hashedPasswordEmployee = await bcrypt.hash("employee123", saltRounds)
 
-  /* ------------------------- Create test admin_test ------------------------- */
+  /* ------------------------- Insert test admin ------------------------- */
   await new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO users (username, password, idCard, name, role, status) 
@@ -100,9 +112,8 @@ const initializeTestDatabase = async () => {
       }
     )
   })
-  /* -------------------------------------------------------------------------- */
 
-  /* -------------------------- Create test employee -------------------------- */
+  /* ------------------------- Insert test employee ------------------------- */
   await new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO users (username, password, idCard, name, role, status) 
@@ -126,8 +137,7 @@ const initializeTestDatabase = async () => {
     )
   })
 
-  /* -------------------------------------------------------------------------- */
-  /* ---------------------- Create test inactive employee --------------------- */
+  /* ---------------------- Insert test inactive employee --------------------- */
   await new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO users (username, password, idCard, name, role, status) 
@@ -153,7 +163,6 @@ const initializeTestDatabase = async () => {
       }
     )
   })
-  /* -------------------------------------------------------------------------- */
 
   return db
 }
