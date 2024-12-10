@@ -114,7 +114,7 @@ class UserService {
 
     let hashedPassword
     if (password) {
-      hashedPassword = await hashPassword(password)
+      hashedPassword = await this.hashPassword(password)
     }
 
     return new Promise((resolve, reject) => {

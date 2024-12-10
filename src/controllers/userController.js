@@ -34,7 +34,7 @@ class UserController {
         }
       }
     } catch (err) {
-      logger.error("UserController - register: ", err.message)
+      logger.error("UserController - register: ", err)
       if (err.message === "MissingRequiredFields") {
         res.status(400).json({
           error: MESSAGES.MISSING_REQUIRED_FIELDS,
@@ -114,8 +114,8 @@ class UserController {
         name,
       })
       res.status(200).json({ message: MESSAGES.SUCCESS_UPDATE_USER })
-    } catch (error) {
-      logger.error("UserController - updateUser: ", error.message)
+    } catch (err) {
+      logger.error("UserController - updateUser: ", err)
       res.status(500).json({ error: MESSAGES.FAILED_UPDATE_USER })
     }
   }
