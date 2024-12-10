@@ -89,7 +89,7 @@ describe("User API Tests with Authentication", () => {
     expect(response.body.error).toBe(MESSAGES.USER_NOT_FOUND)
   })
 
-  test.skip("should create a new admin", async () => {
+  test("should create a new admin", async () => {
     const newAdmin = {
       username: "new_admin",
       password: "1234",
@@ -105,51 +105,51 @@ describe("User API Tests with Authentication", () => {
     expect(adminResponse.status).toBe(201)
   })
 
-  test.skip("should create a new employee", async () => {
+  test("should create a new employee", async () => {
     const newEmployee = {
-      username: employeeUsername,
-      password: employeePassword,
+      username: "new_employee",
+      password: "1234",
       name: "YYY",
       idCard: "AAA111",
       role: "employee",
     }
 
     const response = await request(app)
-      .post("/api/auth/register/employee")
-      .set("Authorization", `Bearer ${employeeToken}`)
+      .post("/api/auth/register")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send(newEmployee)
     expect(response.status).toBe(201)
   })
 
-  test.skip("should fail to create a new user for missing required fields", async () => {
+  test("should fail to create a new user for missing required fields", async () => {
     const newUser = {
       username: "newinvaliduser",
       password: "1234",
     }
 
     const response = await request(app)
-      .post("/api/auth/register/client")
+      .post("/api/auth/register")
       .set("Authorization", `Bearer ${adminToken}`)
       .send(newUser)
     expect(response.status).toBe(400)
     expect(response.body.error).toBe(MESSAGES.MISSING_REQUIRED_FIELDS)
   })
 
-  test.skip("should turn a user status into 'inactive'", async () => {
+  test("should turn a user status into 'inactive'", async () => {
     const response = await request(app)
       .delete(`/api/auth/${employeeUsername}`)
       .set("Authorization", `Bearer ${adminToken}`)
     expect(response.status).toBe(200)
   })
 
-  test.skip("should succeed to turn user status into 'active'", async () => {
+  test("should succeed to turn user status into 'active'", async () => {
     const response = await request(app)
       .put(`/api/auth/activate/${employeeUsername}`)
       .set("Authorization", `Bearer ${adminToken}`)
     expect(response.status).toBe(200)
   })
 
-  test.skip("should update a user", async () => {
+  test("should update a user", async () => {
     const employeeUpdate = {
       username: employeeUsername,
       password: employeePassword,
@@ -159,7 +159,7 @@ describe("User API Tests with Authentication", () => {
     }
 
     const response = await request(app)
-      .put("/api/auth/update/client@e.com")
+      .put(`/api/auth/update/${employeeUpdate.username}`)
       .set("Authorization", `Bearer ${adminToken}`)
       .send(employeeUpdate)
     expect(response.status).toBe(200)
